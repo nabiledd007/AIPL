@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Postural Analysis Fujikura</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        video {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 1px solid #d1d5db;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            top: 0px;
+            right: 10px;
+            z-index: 10;
+            object-fit: cover;
+        }
+        canvas {
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: none;
+            height: auto;
+        }
+        #report {
+            max-width: 800px;
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            border-radius: 12px;
+        }
+        .menu-tab, .chart-tab {
+            transition: all 0.3s ease;
+        }
+        .menu-tab.active, .chart-tab.active {
+            background: #3b82f6;
+            color: white;
+            border-radius: 8px;
+        }
+        .menu-tab:hover, .chart-tab:hover {
+            background: #93c5fd;
+            color: white;
+        }
+        button {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            canvas {
+                max-width: 100%;
+            }
+            #report {
+                width: 100%;
+            }
+            video {
+                top: 70px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col items-center p-4">
+    <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 mb-4">AI Postural Analysis Fujikura</h1>
+    <div class="flex gap-2 mb-4">
+        <button onclick="showView('analyse')" class="menu-tab px-4 py-2 bg-gray-200 text-gray-700 active" id="analyseTab">Analyse</button>
+        <button onclick="showView('report')" class="menu-tab px-4 py-2 bg-gray-200 text-gray-700" id="reportTab">Report</button>
+    </div>
+    <div class="container flex flex-col md:flex-row gap-6 w-full max-w-5xl">
+        <div id="analyseView" class="flex-1 relative">
+            <video id="video" autoplay class="mb-4"></video>
+            <canvas id="canvas" class="mb-4"></canvas>
+            <div class="flex gap-4 flex-wrap">
+                <button onclick="startAnalysis()" class="bg-blue-500 text-white px-6 py-2 hover:bg-blue-600">Start Analysis</button>
+                <button onclick="switchCamera()" class="bg-yellow-500 text-white px-6 py-2 hover:bg-yellow-600">Switch Camera</button>
+                <button onclick="saveData()" class="bg-green-500 text-white px-6 py-2 hover:bg-green-600">Save Data</button>
+            </div>
+            <div id="analysis" class="bg-white p-4 rounded-lg shadow mt-4">
+                <p class="text-gray-700">Postural Analysis: <span id="postureStatus">Waiting for analysis...</span></p>
+            </div>
+        </div>
+        <div id="reportView" class="flex-1 p-6 shadow hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Posture Report</h2>
+            <div class="flex gap-2 mb-4 flex-wrap">
+                <button onclick="loadReport('pie')" class="chart-tab px-4 py-2 bg-gray-200 text-gray-700" id="pieTab">Pie</button>
+                <button onclick="loadReport('bar')" class="chart-tab px-4 py-2 bg-gray-200 text-gray-700" id="barTab">Bar</button>
+                <button onclick="loadReport('line')" class="chart-tab px-4 py-2 bg-gray-200 text-gray-700" id="lineTab">Line</button>
+                <button onclick="loadReport('scatter')" class="chart-tab px-4 py-2 bg-gray-200 text-gray-700" id="scatterTab">Scatter</button>
+                <button onclick="exportToPDF()" class="bg-red-500 text-white px-4 py-2 hover:bg-red-600">Export to PDF</button>
+            </div>
+            <canvas id="postureChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const { jsPDF } = window.jspdf;
+        const videoElement = document.getElementById('video');
+        const canvasElement = document.getElementById('canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const postureStatus = document.getElementById('postureStatus');
+        const analyseView = document.getElementById('analyseView');
+        const reportView = document.getElementById('reportView');
+        let latestPostureData = {};
+        let postureChart = null;
+        let latestChartData = null;
+        let currentFacingMode = 'environment'; // Default to back camera
+
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbweXaq-kVNeqy-GrLfqKEQ-eerXfKoErFVpV_MgYeIVJ5y7_r50yF82S1sgw5jJsl7X/exec';
+
+        // Initialize MediaPipe Pose
+        const pose = new Pose({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
+        });
+        pose.setOptions({
+            modelComplexity: 1,
+            smoothLandmarks: true,
+            enableSegmentation: false,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+        pose.onResults(onResults);
+
+        // Initialize camera
+        let camera = new Camera(videoElement, {
+            onFrame: async () => {
+                await pose.send({ image: videoElement });
+            },
+            width: 640,
+            height: 480,
+            facingMode: currentFacingMode
+        });
+
+        function startAnalysis() {
+            camera.start();
+            postureStatus.textContent = 'Analyzing posture...';
+            // Dynamically set canvas size to match container
+            canvasElement.width = analyseView.clientWidth;
+            canvasElement.height = canvasElement.width * (480 / 640);
+        }
+
+        async function switchCamera() {
+            try {
+                // Stop current camera
+                await camera.stop();
+
+                // Toggle facing mode
+                currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+
+                // Reinitialize camera with new facing mode
+                camera = new Camera(videoElement, {
+                    onFrame: async () => {
+                        await pose.send({ image: videoElement });
+                    },
+                    width: 640,
+                    height: 480,
+                    facingMode: currentFacingMode
+                });
+                await camera.start();
+                postureStatus.textContent = `Analyzing posture (${currentFacingMode === 'environment' ? 'Back' : 'Front'} camera)...`;
+            } catch (error) {
+                alert('Error switching camera: ' + error.message);
+            }
+        }
+
+        function onResults(results) {
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.poseLandmarks) {
+                drawLandmarks(results.poseLandmarks);
+                analyzePosture(results.poseLandmarks);
+            }
+        }
+
+        function drawLandmarks(landmarks) {
+            canvasCtx.strokeStyle = 'red';
+            canvasCtx.lineWidth = 5;
+            for (const landmark of landmarks) {
+                canvasCtx.beginPath();
+                canvasCtx.arc(landmark.x * canvasElement.width, landmark.y * canvasElement.height, 5, 0, 2 * Math.PI);
+                canvasCtx.fillStyle = 'red';
+                canvasCtx.fill();
+            }
+            const connections = [[11, 12], [11, 13], [12, 14], [23, 24]];
+            canvasCtx.strokeStyle = 'green';
+            canvasCtx.lineWidth = 10; // Bold green lines
+            for (const [start, end] of connections) {
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(landmarks[start].x * canvasElement.width, landmarks[start].y * canvasElement.height);
+                canvasCtx.lineTo(landmarks[end].x * canvasElement.width, landmarks[end].y * canvasElement.height);
+                canvasCtx.stroke();
+            }
+        }
+
+        function analyzePosture(landmarks) {
+            const nose = landmarks[0];
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+            const shoulderMidpointX = (leftShoulder.x + rightShoulder.x) / 2;
+            const shoulderMidpointY = (leftShoulder.y + rightShoulder.y) / 2;
+            const forwardHeadDistance = Math.abs(nose.x - shoulderMidpointX);
+            const shoulderAlignment = Math.abs(leftShoulder.y - rightShoulder.y);
+            let status = 'Good posture';
+            if (forwardHeadDistance > 0.1) {
+                status = 'Forward head detected! Try aligning your head with your shoulders.';
+            }
+            if (shoulderAlignment > 0.05) {
+                status += '\nUneven shoulders detected! Try leveling your shoulders.';
+            }
+            postureStatus.innerText = status;
+            latestPostureData = { forwardHeadDistance, shoulderAlignment, userId: 'user1' };
+        }
+
+        async function saveData() {
+            if (!latestPostureData.forwardHeadDistance) {
+                alert('No posture data to save. Start analysis first.');
+                return;
+            }
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(latestPostureData)
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert('Data saved to Google Sheets!');
+                } else {
+                    alert('Error saving data: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function loadReport(chartType = 'line') {
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                const data = await response.json();
+                if (data.status === 'error') {
+                    alert('Error loading data: ' + data.message);
+                    return;
+                }
+                const labels = data.map(row => new Date(row.timestamp).toLocaleString());
+                const forwardHeadData = data.map(row => row.forwardHeadDistance);
+                const shoulderAlignmentData = data.map(row => row.shoulderAlignment);
+                latestChartData = { labels, forwardHeadData, shoulderAlignmentData };
+
+                // Update chart tab styles
+                ['pieTab', 'barTab', 'lineTab', 'scatterTab'].forEach(tab => {
+                    document.getElementById(tab).classList.remove('active');
+                });
+                document.getElementById(`${chartType}Tab`).classList.add('active');
+
+                reportView.classList.remove('hidden');
+                const ctx = document.getElementById('postureChart').getContext('2d');
+
+                // Destroy existing chart
+                if (postureChart) {
+                    postureChart.destroy();
+                }
+
+                // Configure chart
+                const config = {
+                    data: {
+                        labels: chartType === 'pie' ? ['Forward Head', 'Shoulder Alignment'] : labels,
+                        datasets: []
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: { display: true, text: 'Posture Trends', font: { size: 18 } }
+                        }
+                    }
+                };
+
+                if (chartType === 'pie') {
+                    config.type = 'pie';
+                    const latestData = data[data.length - 1] || {};
+                    config.data.datasets = [{
+                        data: [latestData.forwardHeadDistance || 0, latestData.shoulderAlignment || 0],
+                        backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(236, 72, 153, 0.8)']
+                    }];
+                    config.options.plugins.legend = { position: 'top' };
+                } else {
+                    config.data.datasets = [
+                        {
+                            label: 'Forward Head Distance',
+                            data: forwardHeadData,
+                            borderColor: 'rgba(59, 130, 246, 0.8)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            fill: chartType === 'line' || chartType === 'bar',
+                            tension: chartType === 'line' ? 0.4 : 0
+                        },
+                        {
+                            label: 'Shoulder Alignment Difference',
+                            data: shoulderAlignmentData,
+                            borderColor: 'rgba(236, 72, 153, 0.8)',
+                            backgroundColor: 'rgba(236, 72, 153, 0.2)',
+                            fill: chartType === 'line' || chartType === 'bar',
+                            tension: chartType === 'line' ? 0.4 : 0
+                        }
+                    ];
+                    config.options.scales = {
+                        y: { beginAtZero: true, title: { display: true, text: 'Distance (Normalized)' } },
+                        x: { title: { display: true, text: 'Timestamp' } }
+                    };
+                    config.type = chartType === 'scatter' ? 'scatter' : chartType;
+                    if (chartType === 'scatter') {
+                        config.data.datasets.forEach(dataset => {
+                            dataset.pointRadius = 5;
+                            dataset.pointBackgroundColor = dataset.borderColor;
+                        });
+                    }
+                }
+
+                // Create new chart
+                postureChart = new Chart(ctx, config);
+            } catch (error) {
+                alert('Error loading report: ' + error.message);
+            }
+        }
+
+        function exportToPDF() {
+            if (!postureChart || !latestChartData) {
+                alert('No chart data available. Load a report first.');
+                return;
+            }
+            const doc = new jsPDF();
+            doc.setFontSize(16);
+            doc.text('Posture Analysis Report', 20, 20);
+
+            // Add chart
+            const chartCanvas = document.getElementById('postureChart');
+            const chartDataUrl = chartCanvas.toDataURL('image/png');
+            doc.addImage(chartDataUrl, 'PNG', 20, 30, 170, 100);
+
+            // Add posture data
+            doc.setFontSize(12);
+            doc.text('Latest Posture Metrics:', 20, 140);
+            doc.text(`Forward Head Distance: ${latestPostureData.forwardHeadDistance || 'N/A'}`, 20, 150);
+            doc.text(`Shoulder Alignment: ${latestPostureData.shoulderAlignment || 'N/A'}`, 20, 160);
+            doc.text(`Status: ${postureStatus.innerText}`, 20, 170);
+
+            // Save PDF
+            doc.save(`Posture_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+        }
+
+        function showView(view) {
+            document.getElementById('analyseTab').classList.remove('active');
+            document.getElementById('reportTab').classList.remove('active');
+            document.getElementById(`${view}Tab`).classList.add('active');
+
+            analyseView.classList.add('hidden');
+            reportView.classList.add('hidden');
+
+            if (view === 'analyse') {
+                analyseView.classList.remove('hidden');
+            } else {
+                reportView.classList.remove('hidden');
+                loadReport('line');
+            }
+        }
+    </script>
+</body>
+</html>
