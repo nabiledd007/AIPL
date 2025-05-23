@@ -3,47 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Postural Analysis Fujikura</title>
+    <title>AI Postural Analysis</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        video {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 1px solid #d1d5db;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        video, canvas {
             position: absolute;
-            top: 0px;
-            right: 10px;
-            z-index: 10;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             object-fit: cover;
+            z-index: 1;
         }
         canvas {
-            border: 1px solid #d1d5db;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 2;
+        }
+        #navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        .nav-item {
+            color: #4b5563;
+            font-size: 24px;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+        .nav-item:hover {
+            transform: scale(1.2);
+            color: #3b82f6;
+        }
+        .nav-item.active {
+            color: #3b82f6;
+            transform: scale(1.1);
+        }
+        #analysis {
+            position: fixed;
+            bottom: 70px;
+            left: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        #reportView {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: none;
-            height: auto;
+            height: 100%;
+            background: #f1f5f9;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 3;
         }
         #report {
             max-width: 800px;
+            margin-top:0px;
             background: linear-gradient(145deg, #ffffff, #f1f5f9);
             border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 40px);
         }
-        .menu-tab, .chart-tab {
+        #chartButtons {
+            flex: 0 0 auto;
+            margin-bottom: 20px;
+        }
+        #postureChart {
+            flex: 1;
+margin-top:100px;
+            width: 100%;
+            max-height: 400px;
+        }
+        .chart-tab {
             transition: all 0.3s ease;
         }
-        .menu-tab.active, .chart-tab.active {
+        .chart-tab.active {
             background: #3b82f6;
             color: white;
             border-radius: 8px;
         }
-        .menu-tab:hover, .chart-tab:hover {
+        .chart-tab:hover {
             background: #93c5fd;
             color: white;
         }
@@ -52,53 +114,45 @@
             border-radius: 8px;
         }
         @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-                align-items: center;
-            }
-            canvas {
-                max-width: 100%;
-            }
             #report {
                 width: 100%;
             }
-            video {
-                top: 70px;
-                right: 10px;
+            #analysis {
+                font-size: 14px;
+            }
+            #postureChart {
+                max-height: 300px;
             }
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col items-center p-4">
-    <h1 class="text-2xl md:text-3xl font-semibold text-gray-900 mb-4">AI Postural Analysis Fujikura</h1>
-    <div class="flex gap-2 mb-4">
-        <button onclick="showView('analyse')" class="menu-tab px-4 py-2 bg-gray-200 text-gray-700 active" id="analyseTab">Analyse</button>
-        <button onclick="showView('report')" class="menu-tab px-4 py-2 bg-gray-200 text-gray-700" id="reportTab">Report</button>
+<body class="bg-gray-50">
+    <video id="video" autoplay></video>
+    <canvas id="canvas"></canvas>
+    <div id="analysis" class="hidden">
+        <p class="text-gray-700">Postural Analysis: <span id="postureStatus">Waiting for analysis...</span></p>
     </div>
-    <div class="container flex flex-col md:flex-row gap-6 w-full max-w-5xl">
-        <div id="analyseView" class="flex-1 relative">
-            <video id="video" autoplay class="mb-4"></video>
-            <canvas id="canvas" class="mb-4"></canvas>
-            <div class="flex gap-4 flex-wrap">
-                <button onclick="startAnalysis()" class="bg-blue-500 text-white px-6 py-2 hover:bg-blue-600">Start Analysis</button>
-                <button onclick="switchCamera()" class="bg-yellow-500 text-white px-6 py-2 hover:bg-yellow-600">Switch Camera</button>
-                <button onclick="saveData()" class="bg-green-500 text-white px-6 py-2 hover:bg-green-600">Save Data</button>
-            </div>
-            <div id="analysis" class="bg-white p-4 rounded-lg shadow mt-4">
-                <p class="text-gray-700">Postural Analysis: <span id="postureStatus">Waiting for analysis...</span></p>
-            </div>
-        </div>
-        <div id="reportView" class="flex-1 p-6 shadow hidden">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Posture Report</h2>
-            <div class="flex gap-2 mb-4 flex-wrap">
+    <div id="reportView" class="hidden">
+
+<div id="chartButtons" class="flex gap-2 mb-4 flex-wrap">
                 <button onclick="loadReport('pie')" class="chart-tab px-4 py-2 bg-gray-200 text-gray-700" id="pieTab">Pie</button>
                 <button onclick="loadReport('bar')" class="chart-tab px-4 py-2 bg-gray-200 text-gray-700" id="barTab">Bar</button>
                 <button onclick="loadReport('line')" class="chart-tab px-4 py-2 bg-gray-200 text-gray-700" id="lineTab">Line</button>
                 <button onclick="loadReport('scatter')" class="chart-tab px-4 py-2 bg-gray-200 text-gray-700" id="scatterTab">Scatter</button>
                 <button onclick="exportToPDF()" class="bg-red-500 text-white px-4 py-2 hover:bg-red-600">Export to PDF</button>
-            </div>
+            
+    </div>
+        <div id="report">
+          
+    </div>
             <canvas id="postureChart"></canvas>
         </div>
+    <div id="navbar">
+        <i class="fas fa-home nav-item active" onclick="showView('analyse')" id="analyseTab"></i>
+        <i class="fas fa-chart-line nav-item" onclick="showView('report')" id="reportTab"></i>
+        <i class="fas fa-play nav-item" onclick="startAnalysis()" id="startAnalysisTab"></i>
+        <i class="fas fa-camera-rotate nav-item" onclick="switchCamera()" id="switchCameraTab"></i>
+        <i class="fas fa-save nav-item" onclick="saveData()" id="saveDataTab"></i>
     </div>
 
     <script>
@@ -107,14 +161,14 @@
         const canvasElement = document.getElementById('canvas');
         const canvasCtx = canvasElement.getContext('2d');
         const postureStatus = document.getElementById('postureStatus');
-        const analyseView = document.getElementById('analyseView');
+        const analysisDiv = document.getElementById('analysis');
         const reportView = document.getElementById('reportView');
         let latestPostureData = {};
         let postureChart = null;
         let latestChartData = null;
         let currentFacingMode = 'environment'; // Default to back camera
 
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbweXaq-kVNeqy-GrLfqKEQ-eerXfKoErFVpV_MgYeIVJ5y7_r50yF82S1sgw5jJsl7X/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqfAtBZ1ObZfzTaaB7EB3sNHJJ3W_zXJQUKiMWzoDcjt8ramwos4_gPd3cwpi8n7eL/exec';
 
         // Initialize MediaPipe Pose
         const pose = new Pose({
@@ -134,34 +188,30 @@
             onFrame: async () => {
                 await pose.send({ image: videoElement });
             },
-            width: 640,
-            height: 480,
+            width: 1280,
+            height: 720,
             facingMode: currentFacingMode
         });
 
         function startAnalysis() {
             camera.start();
             postureStatus.textContent = 'Analyzing posture...';
-            // Dynamically set canvas size to match container
-            canvasElement.width = analyseView.clientWidth;
-            canvasElement.height = canvasElement.width * (480 / 640);
+            analysisDiv.classList.remove('hidden');
+            // Set canvas size to match video
+            canvasElement.width = window.innerWidth;
+            canvasElement.height = window.innerHeight;
         }
 
         async function switchCamera() {
             try {
-                // Stop current camera
                 await camera.stop();
-
-                // Toggle facing mode
                 currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-
-                // Reinitialize camera with new facing mode
                 camera = new Camera(videoElement, {
                     onFrame: async () => {
                         await pose.send({ image: videoElement });
                     },
-                    width: 640,
-                    height: 480,
+                    width: 1280,
+                    height: 720,
                     facingMode: currentFacingMode
                 });
                 await camera.start();
@@ -183,7 +233,7 @@
 
         function drawLandmarks(landmarks) {
             canvasCtx.strokeStyle = 'red';
-            canvasCtx.lineWidth = 5;
+            canvasCtx.lineWidth = 2;
             for (const landmark of landmarks) {
                 canvasCtx.beginPath();
                 canvasCtx.arc(landmark.x * canvasElement.width, landmark.y * canvasElement.height, 5, 0, 2 * Math.PI);
@@ -192,7 +242,7 @@
             }
             const connections = [[11, 12], [11, 13], [12, 14], [23, 24]];
             canvasCtx.strokeStyle = 'green';
-            canvasCtx.lineWidth = 10; // Bold green lines
+            canvasCtx.lineWidth = 10;
             for (const [start, end] of connections) {
                 canvasCtx.beginPath();
                 canvasCtx.moveTo(landmarks[start].x * canvasElement.width, landmarks[start].y * canvasElement.height);
@@ -254,7 +304,6 @@
                 const shoulderAlignmentData = data.map(row => row.shoulderAlignment);
                 latestChartData = { labels, forwardHeadData, shoulderAlignmentData };
 
-                // Update chart tab styles
                 ['pieTab', 'barTab', 'lineTab', 'scatterTab'].forEach(tab => {
                     document.getElementById(tab).classList.remove('active');
                 });
@@ -263,12 +312,10 @@
                 reportView.classList.remove('hidden');
                 const ctx = document.getElementById('postureChart').getContext('2d');
 
-                // Destroy existing chart
                 if (postureChart) {
                     postureChart.destroy();
                 }
 
-                // Configure chart
                 const config = {
                     data: {
                         labels: chartType === 'pie' ? ['Forward Head', 'Shoulder Alignment'] : labels,
@@ -322,7 +369,6 @@
                     }
                 }
 
-                // Create new chart
                 postureChart = new Chart(ctx, config);
             } catch (error) {
                 alert('Error loading report: ' + error.message);
@@ -338,19 +384,16 @@
             doc.setFontSize(16);
             doc.text('Posture Analysis Report', 20, 20);
 
-            // Add chart
             const chartCanvas = document.getElementById('postureChart');
             const chartDataUrl = chartCanvas.toDataURL('image/png');
             doc.addImage(chartDataUrl, 'PNG', 20, 30, 170, 100);
 
-            // Add posture data
             doc.setFontSize(12);
             doc.text('Latest Posture Metrics:', 20, 140);
             doc.text(`Forward Head Distance: ${latestPostureData.forwardHeadDistance || 'N/A'}`, 20, 150);
             doc.text(`Shoulder Alignment: ${latestPostureData.shoulderAlignment || 'N/A'}`, 20, 160);
             doc.text(`Status: ${postureStatus.innerText}`, 20, 170);
 
-            // Save PDF
             doc.save(`Posture_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
         }
 
@@ -359,11 +402,11 @@
             document.getElementById('reportTab').classList.remove('active');
             document.getElementById(`${view}Tab`).classList.add('active');
 
-            analyseView.classList.add('hidden');
+            analysisDiv.classList.add('hidden');
             reportView.classList.add('hidden');
 
             if (view === 'analyse') {
-                analyseView.classList.remove('hidden');
+                analysisDiv.classList.remove('hidden');
             } else {
                 reportView.classList.remove('hidden');
                 loadReport('line');
