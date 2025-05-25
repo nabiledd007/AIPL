@@ -463,7 +463,7 @@
         let latestChartData = null;
         let currentFacingMode = 'environment'; // Default to back camera
 
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyqWAm0PFW-MjYxwYYolPnwXWGDmMFnAu0lrYijhbAeBk4iYwvgYSvRQHndU7tWDYYq8A/exec'; // Replace with your deployed script URL
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbweXaq-kVNeqy-GrLfqKEQ-eerXfKoErFVpV_MgYeIVJ5y7_r50yF82S1sgw5jJsl7X/exec'; // Replace with your deployed script URL
 
         // Initialize MediaPipe Pose
         const pose = new Pose({
@@ -678,330 +678,109 @@
                 alert('No posture data to save. Start analysis first.');
                 return;
             }
-            
             try {
-                postureStatus.textContent = 'Saving data...';
-                statusIndicator.className = 'status-indicator status-warning';
-                
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'saveData',
-                        data: latestPostureData
-                    })
+                    body: JSON.stringify(latestPostureData)
                 });
-                
                 const result = await response.json();
                 if (result.status === 'success') {
-                    postureStatus.textContent = 'Data saved successfully!';
-                    statusIndicator.className = 'status-indicator status-good';
-                    
-                    // Show a temporary success message
-                    const originalText = postureStatus.textContent;
-                    postureStatus.textContent = '✓ Data saved to cloud!';
-                    setTimeout(() => {
-                        postureStatus.textContent = originalText;
-                    }, 2000);
+                    alert('Data saved to Google Sheets!');
                 } else {
-                    throw new Error(result.message || 'Failed to save data');
+                    alert('Error saving data: ' + result.message);
                 }
             } catch (error) {
-                postureStatus.textContent = 'Error saving data: ' + error.message;
-                statusIndicator.className = 'status-indicator status-bad';
-                console.error('Error:', error);
+                alert('Error: ' + error.message);
             }
         }
 
         async function loadReport(chartType = 'line') {
             try {
-                // Show loading state
-                const chartCanvas = document.getElementById('postureChart');
-                const ctx = chartCanvas.getContext('2d');
-                ctx.font = '16px Arial';
-                ctx.fillStyle = '#9ca3af';
-                ctx.textAlign = 'center';
-                ctx.fillText('Loading posture data...', chartCanvas.width/2, chartCanvas.height/2);
-                
-                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=getData');
+                const response = await fetch(GOOGLE_SCRIPT_URL);
                 const data = await response.json();
-                
                 if (data.status === 'error') {
-                    throw new Error(data.message || 'Failed to load data');
+                    alert('Error loading data: ' + data.message);
+                    return;
                 }
-                
-                // Process data
-                const labels = data.data.map(row => new Date(row.timestamp).toLocaleString());
-                const forwardHeadData = data.data.map(row => row.forwardHeadDistance);
-                const shoulderAlignmentData = data.data.map(row => row.shoulderAlignment);
-                const backCurvatureData = data.data.map(row => row.backCurvature);
-                const leftArmAngleData = data.data.map(row => row.leftArmAngle);
-                const rightArmAngleData = data.data.map(row => row.rightArmAngle);
-                const leftLegAngleData = data.data.map(row => row.leftLegAngle);
-                const rightLegAngleData = data.data.map(row => row.rightLegAngle);
-                
-                latestChartData = { 
-                    labels, 
-                    forwardHeadData, 
-                    shoulderAlignmentData,
-                    backCurvatureData,
-                    leftArmAngleData,
-                    rightArmAngleData,
-                    leftLegAngleData,
-                    rightLegAngleData
-                };
+                const labels = data.map(row => new Date(row.timestamp).toLocaleString());
+                const forwardHeadData = data.map(row => row.forwardHeadDistance);
+                const shoulderAlignmentData = data.map(row => row.shoulderAlignment);
+                latestChartData = { labels, forwardHeadData, shoulderAlignmentData };
 
-                // Update active tab styling
+                // Update chart tab styles
                 ['pieTab', 'barTab', 'lineTab', 'scatterTab'].forEach(tab => {
                     document.getElementById(tab).classList.remove('active');
                 });
                 document.getElementById(`${chartType}Tab`).classList.add('active');
 
-                // Configure chart based on type
-                const config = {
-                    data: {
-                        labels: chartType === 'pie' ? [
-                            'Forward Head', 
-                            'Shoulder Alignment', 
-                            'Back Curvature', 
-                            'Left Arm Angle', 
-                            'Right Arm Angle', 
-                            'Left Leg Angle', 
-                            'Right Leg Angle'
-                        ] : labels,
-                        datasets: []
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                                labels: {
-                                    font: {
-                                        size: 14,
-                                        family: "'Inter', sans-serif"
-                                    },
-                                    padding: 20
-                                }
-                            },
-                            title: { 
-                                display: true, 
-                                text: 'Your Posture Analysis', 
-                                font: {
-                                    size: 18,
-                                    family: "'Inter', sans-serif",
-                                    weight: '600'
-                                },
-                                padding: {
-                                    top: 10,
-                                    bottom: 20
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(30, 41, 59, 0.9)',
-                                titleFont: {
-                                    size: 14,
-                                    family: "'Inter', sans-serif",
-                                    weight: '600'
-                                },
-                                bodyFont: {
-                                    size: 12,
-                                    family: "'Inter', sans-serif"
-                                },
-                                padding: 12,
-                                cornerRadius: 12,
-                                displayColors: true
-                            }
-                        },
-                        scales: chartType !== 'pie' ? {
-                            y: { 
-                                beginAtZero: true, 
-                                title: { 
-                                    display: true, 
-                                    text: 'Value', 
-                                    font: {
-                                        size: 12,
-                                        family: "'Inter', sans-serif",
-                                        weight: '500'
-                                    }
-                                },
-                                grid: {
-                                    color: 'rgba(0, 0, 0, 0.05)'
-                                }
-                            },
-                            x: { 
-                                title: { 
-                                    display: true, 
-                                    text: 'Time', 
-                                    font: {
-                                        size: 12,
-                                        family: "'Inter', sans-serif",
-                                        weight: '500'
-                                    }
-                                },
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        } : {}
-                    }
-                };
+                reportView.classList.remove('hidden');
+                const ctx = document.getElementById('postureChart').getContext('2d');
 
-                // Dataset configuration
-                if (chartType === 'pie') {
-                    config.type = 'pie';
-                    const latestData = data.data[data.data.length - 1] || {};
-                    config.data.datasets = [{
-                        data: [
-                            latestData.forwardHeadDistance || 0,
-                            latestData.shoulderAlignment || 0,
-                            latestData.backCurvature || 0,
-                            latestData.leftArmAngle || 0,
-                            latestData.rightArmAngle || 0,
-                            latestData.leftLegAngle || 0,
-                            latestData.rightLegAngle || 0
-                        ],
-                        backgroundColor: [
-                            'rgba(99, 102, 241, 0.8)',
-                            'rgba(16, 185, 129, 0.8)',
-                            'rgba(244, 63, 94, 0.8)',
-                            'rgba(236, 72, 153, 0.8)',
-                            'rgba(59, 130, 246, 0.8)',
-                            'rgba(234, 179, 8, 0.8)',
-                            'rgba(168, 85, 247, 0.8)'
-                        ],
-                        borderColor: [
-                            'rgba(99, 102, 241, 1)',
-                            'rgba(16, 185, 129, 1)',
-                            'rgba(244, 63, 94, 1)',
-                            'rgba(236, 72, 153, 1)',
-                            'rgba(59, 130, 246, 1)',
-                            'rgba(234, 179, 8, 1)',
-                            'rgba(168, 85, 247, 1)'
-                        ],
-                        borderWidth: 1
-                    }];
-                } else {
-                    config.type = chartType === 'scatter' ? 'scatter' : chartType;
-                    config.data.datasets = [
-                        {
-                            label: 'Forward Head Distance',
-                            data: forwardHeadData,
-                            borderColor: 'rgba(99, 102, 241, 0.8)',
-                            backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                            fill: chartType === 'line' || chartType === 'bar',
-                            tension: chartType === 'line' ? 0.4 : 0,
-                            borderWidth: 2,
-                            pointBackgroundColor: 'rgba(99, 102, 241, 1)',
-                            pointRadius: chartType === 'scatter' ? 6 : 3,
-                            pointHoverRadius: 8
-                        },
-                        {
-                            label: 'Shoulder Alignment',
-                            data: shoulderAlignmentData,
-                            borderColor: 'rgba(16, 185, 129, 0.8)',
-                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                            fill: chartType === 'line' || chartType === 'bar',
-                            tension: chartType === 'line' ? 0.4 : 0,
-                            borderWidth: 2,
-                            pointBackgroundColor: 'rgba(16, 185, 129, 1)',
-                            pointRadius: chartType === 'scatter' ? 6 : 3,
-                            pointHoverRadius: 8
-                        },
-                        {
-                            label: 'Back Curvature',
-                            data: backCurvatureData,
-                            borderColor: 'rgba(244, 63, 94, 0.8)',
-                            backgroundColor: 'rgba(244, 63, 94, 0.2)',
-                            fill: chartType === 'line' || chartType === 'bar',
-                            tension: chartType === 'line' ? 0.4 : 0,
-                            borderWidth: 2,
-                            pointBackgroundColor: 'rgba(244, 63, 94, 1)',
-                            pointRadius: chartType === 'scatter' ? 6 : 3,
-                            pointHoverRadius: 8
-                        },
-                        {
-                            label: 'Left Arm Angle',
-                            data: leftArmAngleData,
-                            borderColor: 'rgba(236, 72, 153, 0.8)',
-                            backgroundColor: 'rgba(236, 72, 153, 0.2)',
-                            fill: chartType === 'line' || chartType === 'bar',
-                            tension: chartType === 'line' ? 0.4 : 0,
-                            borderWidth: 2,
-                            pointBackgroundColor: 'rgba(236, 72, 153, 1)',
-                            pointRadius: chartType === 'scatter' ? 6 : 3,
-                            pointHoverRadius: 8
-                        },
-                        {
-                            label: 'Right Arm Angle',
-                            data: rightArmAngleData,
-                            borderColor: 'rgba(59, 130, 246, 0.8)',
-                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                            fill: chartType === 'line' || chartType === 'bar',
-                            tension: chartType === 'line' ? 0.4 : 0,
-                            borderWidth: 2,
-                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
-                            pointRadius: chartType === 'scatter' ? 6 : 3,
-                            pointHoverRadius: 8
-                        },
-                        {
-                            label: 'Left Leg Angle',
-                            data: leftLegAngleData,
-                            borderColor: 'rgba(234, 179, 8, 0.8)',
-                            backgroundColor: 'rgba(234, 179, 8, 0.2)',
-                            fill: chartType === 'line' || chartType === 'bar',
-                            tension: chartType === 'line' ? 0.4 : 0,
-                            borderWidth: 2,
-                            pointBackgroundColor: 'rgba(234, 179, 8, 1)',
-                            pointRadius: chartType === 'scatter' ? 6 : 3,
-                            pointHoverRadius: 8
-                        },
-                        {
-                            label: 'Right Leg Angle',
-                            data: rightLegAngleData,
-                            borderColor: 'rgba(168, 85, 247, 0.8)',
-                            backgroundColor: 'rgba(168, 85, 247, 0.2)',
-                            fill: chartType === 'line' || chartType === 'bar',
-                            tension: chartType === 'line' ? 0.4 : 0,
-                            borderWidth: 2,
-                            pointBackgroundColor: 'rgba(168, 85, 247, 1)',
-                            pointRadius: chartType === 'scatter' ? 6 : 3,
-                            pointHoverRadius: 8
-                        }
-                    ];
-                }
-
-                // Destroy existing chart if it exists
+                // Destroy existing chart
                 if (postureChart) {
                     postureChart.destroy();
                 }
 
-                // Create new chart with animation
-                postureChart = new Chart(ctx, {
-                    ...config,
+                // Configure chart
+                const config = {
+                    data: {
+                        labels: chartType === 'pie' ? ['Forward Head', 'Shoulder Alignment'] : labels,
+                        datasets: []
+                    },
                     options: {
-                        ...config.options,
-                        animation: {
-                            duration: 1000,
-                            easing: 'easeOutQuart'
+                        responsive: true,
+                        plugins: {
+                            title: { display: true, text: 'Posture Trends', font: { size: 18 } }
                         }
                     }
-                });
-                
+                };
+
+                if (chartType === 'pie') {
+                    config.type = 'pie';
+                    const latestData = data[data.length - 1] || {};
+                    config.data.datasets = [{
+                        data: [latestData.forwardHeadDistance || 0, latestData.shoulderAlignment || 0],
+                        backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(236, 72, 153, 0.8)']
+                    }];
+                    config.options.plugins.legend = { position: 'top' };
+                } else {
+                    config.data.datasets = [
+                        {
+                            label: 'Forward Head Distance',
+                            data: forwardHeadData,
+                            borderColor: 'rgba(59, 130, 246, 0.8)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            fill: chartType === 'line' || chartType === 'bar',
+                            tension: chartType === 'line' ? 0.4 : 0
+                        },
+                        {
+                            label: 'Shoulder Alignment Difference',
+                            data: shoulderAlignmentData,
+                            borderColor: 'rgba(236, 72, 153, 0.8)',
+                            backgroundColor: 'rgba(236, 72, 153, 0.2)',
+                            fill: chartType === 'line' || chartType === 'bar',
+                            tension: chartType === 'line' ? 0.4 : 0
+                        }
+                    ];
+                    config.options.scales = {
+                        y: { beginAtZero: true, title: { display: true, text: 'Distance (Normalized)' } },
+                        x: { title: { display: true, text: 'Timestamp' } }
+                    };
+                    config.type = chartType === 'scatter' ? 'scatter' : chartType;
+                    if (chartType === 'scatter') {
+                        config.data.datasets.forEach(dataset => {
+                            dataset.pointRadius = 5;
+                            dataset.pointBackgroundColor = dataset.borderColor;
+                        });
+                    }
+                }
+
+                // Create new chart
+                postureChart = new Chart(ctx, config);
             } catch (error) {
-                console.error('Error loading report:', error);
-                const ctx = chartCanvas.getContext('2d');
-                ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-                ctx.font = '16px Arial';
-                ctx.fillStyle = '#ef4444';
-                ctx.textAlign = 'center';
-                ctx.fillText('Failed to load data. Please try again.', chartCanvas.width/2, chartCanvas.height/2);
+                alert('Error loading report: ' + error.message);
             }
         }
-
         function exportToPDF() {
             if (!postureChart || !latestChartData) {
                 alert('No chart data available. Load a report first.');
