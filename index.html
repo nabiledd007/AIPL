@@ -3,440 +3,1104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Nabil Eddghoughi</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>AI Postural Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --accent-color: #4cc9f0;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --success-color: #4bb543;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #f43f5e;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #94a3b8;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
+        
         body {
-            background-color: #f5f7ff;
-            color: var(--dark-color);
-            line-height: 1.6;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .contact-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 2rem 0;
-        }
-
-        .contact-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .contact-header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-            position: relative;
-            display: inline-block;
-        }
-
-        .contact-header h1::after {
-            content: '';
+        
+        video, canvas {
             position: absolute;
-            bottom: -10px;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: 1;
+            border-radius: 16px;
+        }
+        
+        canvas {
+            z-index: 2;
+        }
+        
+        #navbar {
+            position: fixed;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: var(--accent-color);
-            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
-        .contact-header p {
-            font-size: 1.1rem;
-            color: #666;
-            max-width: 600px;
-            margin: 0 auto;
+        
+        .nav-item {
+            color: var(--gray);
+            font-size: 20px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            background: transparent;
         }
-
-        .contact-card {
-            background: white;
+        
+        .nav-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            transform: translateY(-5px);
+        }
+        
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        #analysis {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            z-index: 10;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        #reportView {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 900px;
+            height: auto;
+            max-height: calc(100vh - 120px);
+            background: var(--light);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 50;
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        #report {
             width: 100%;
-            max-width: 800px;
-            overflow: hidden;
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
+            gap: 20px;
         }
-
-        @media (min-width: 992px) {
-            .contact-card {
-                flex-direction: row;
-            }
+        
+        #chartContainer {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
         }
-
-        .contact-info {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 2.5rem;
-            flex: 1;
+        
+        #chartButtonsContainer {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 12px;
         }
-
-        .info-header h2 {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .info-header p {
-            margin-bottom: 2rem;
-            opacity: 0.9;
-        }
-
-        .contact-details {
-            margin-top: 2rem;
-        }
-
-        .detail-item {
+        
+        #chartButtons {
             display: flex;
-            align-items: flex-start;
-            margin-bottom: 1.5rem;
-        }
-
-        .detail-icon {
-            background: rgba(255, 255, 255, 0.2);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
             justify-content: center;
-            margin-right: 1rem;
-            flex-shrink: 0;
         }
-
-        .detail-content h3 {
-            font-size: 1.1rem;
-            margin-bottom: 0.3rem;
+        
+        #postureChart {
+            width: 100%;
+            height: 100%;
+            margin-top: 150px;
         }
-
-        .detail-content p {
-            opacity: 0.8;
-            font-size: 0.95rem;
+        
+        #nb {
+            margin-top: 350px;
         }
-
-        .social-links {
-            display: flex;
-            margin-top: 2rem;
-        }
-
-        .social-links a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            margin-right: 0.8rem;
-            transition: all 0.3s ease;
-        }
-
-        .social-links a:hover {
-            background: var(--accent-color);
-            transform: translateY(-3px);
-        }
-
-        .contact-form {
-            padding: 2.5rem;
-            flex: 1.2;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
+        
+        .chart-tab {
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
             font-weight: 500;
-            color: #555;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
-        }
-
-        textarea.form-control {
-            min-height: 150px;
-            resize: vertical;
-        }
-
-        .submit-btn {
-            background: var(--primary-color);
-            color: white;
+            font-size: 13px;
             border: none;
-            padding: 1rem 2rem;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 8px;
             cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .chart-tab:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+        
+        .chart-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        button {
             transition: all 0.3s ease;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .submit-btn:hover {
-            background: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .submit-btn i {
-            margin-left: 0.5rem;
-        }
-
-        .status-message {
-            padding: 1rem;
             border-radius: 8px;
-            margin-bottom: 1.5rem;
-            text-align: center;
-            display: none;
         }
-
-        .success {
-            background: rgba(75, 181, 67, 0.2);
-            color: var(--success-color);
-            display: block;
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
-
-        .error {
-            background: rgba(255, 0, 0, 0.1);
-            color: #ff0000;
-            display: block;
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
         }
-
-        /* Animation */
+        
+        .btn-danger {
+            background: var(--secondary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+            font-size: 13px;
+        }
+        
+        .btn-danger:hover {
+            background: #e11d48;
+            transform: translateY(-2px);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-good {
+            background: #10b981;
+        }
+        
+        .status-warning {
+            background: #f59e0b;
+        }
+        
+        .status-bad {
+            background: #ef4444;
+        }
+        
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        .contact-card {
-            animation: fadeIn 0.6s ease-out forwards;
+        
+        @media (max-width: 768px) {
+            #navbar {
+                bottom: 10px;
+                padding: 8px 12px;
+                gap: 6px;
+            }
+            
+            .nav-item {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+            
+            #analysis {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                padding: 12px;
+                max-width: 100%;
+            }
+            
+            #reportView {
+                top: 30px;
+                width: 95%;
+                max-height: calc(100vh - 60px);
+                padding: 12px;
+            }
+            
+            #report {
+                padding: 16px;
+                gap: 12px;
+            }
+            
+            #chartContainer {
+                padding: 8px;
+            }
+            
+            #chartButtonsContainer {
+                padding: 8px;
+                margin-bottom: 8px;
+            }
+            
+            #postureChart {
+                aspect-ratio: 4 / 3;
+            }
+            
+            #chartButtons {
+                gap: 4px;
+                justify-content: center;
+            }
+            
+            .chart-tab {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h2 {
+                font-size: 1.25rem;
+            }
+            
+            h3 {
+                font-size: 0.875rem;
+            }
+            
+            .btn-danger {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
         }
-
-        /* Floating labels effect */
-        .floating-label-group {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
-
-        .floating-label {
-            position: absolute;
-            top: 0.8rem;
-            left: 1rem;
-            color: #999;
-            transition: all 0.2s ease;
-            pointer-events: none;
-            background: white;
-            padding: 0 0.3rem;
-        }
-
-        .form-control:focus + .floating-label,
-        .form-control:not(:placeholder-shown) + .floating-label {
-            top: -0.6rem;
-            left: 0.8rem;
-            font-size: 0.8rem;
-            color: var(--primary-color);
+        
+        @media (max-width: 480px) {
+            #report {
+                padding: 8px;
+                gap: 8px;
+            }
+            
+            #chartContainer {
+                padding: 6px;
+            }
+            
+            #chartButtonsContainer {
+                padding: 6px;
+            }
+            
+            #postureChart {
+                aspect-ratio: 1 / 1;
+                padding: 6px;
+            }
+            
+            .chart-tab {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+            
+            h2 {
+                font-size: 1rem;
+            }
+            
+            h3 {
+                font-size: 0.75rem;
+            }
+            
+            .btn-danger {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <section class="contact-section">
-            <div class="contact-header">
-                <h1>Contact Nabil Eddghoughi</h1>
-                <p>Have a project in mind or want to discuss potential opportunities? Feel free to reach out using the form below.</p>
+<body class="bg-gray-50">
+    <video id="video" autoplay></video>
+    <canvas id="canvas"></canvas>
+    
+    <div id="analysis" class="hidden">
+        <div class="flex items-center mb-2">
+            <h3 class="text-lg font-semibold text-gray-800">Posture Analysis</h3>
+            <span id="statusIndicator" class="status-indicator status-warning ml-auto"></span>
+        </div>
+        <p class="text-gray-600 text-sm" id="postureStatus">Waiting for analysis...</p>
+    </div>
+    
+    <div id="reportView" class="hidden">
+        <div id="report">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Posture Report</h2>
+                <button onclick="exportToPDF()" class="btn-danger">
+                    <i class="fas fa-file-pdf mr-2"></i>Export PDF
+                </button>
             </div>
-
-            <div class="contact-card">
-                <div class="contact-info">
-                    <div class="info-header">
-                        <h2>Get in Touch</h2>
-                        <p>I'm always open to discussing new projects, creative ideas or opportunities to be part of your vision.</p>
-                    </div>
-
-                    <div class="contact-details">
-                        <div class="detail-item">
-                            <div class="detail-icon">
-                                <i class="fas fa-map-marker-alt"></i>
-                            </div>
-                            <div class="detail-content">
-                                <h3>Location</h3>
-                                <p>Tanger, Morocco</p>
-                            </div>
-                        </div>
-
-                        <div class="detail-item">
-                            <div class="detail-icon">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <div class="detail-content">
-                                <h3>Email</h3>
-                                <p>nabil.eddghoughi@outlook.com</p>
-                            </div>
-                        </div>
-
-                        <div class="detail-item">
-                            <div class="detail-icon">
-                                <i class="fas fa-phone-alt"></i>
-                            </div>
-                            <div class="detail-content">
-                                <h3>Phone</h3>
-                                <p>+212 679 687 493</p>
-                            </div>
-                        </div>
-
-                        <div class="social-links">
-                            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                            <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
-                            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        </div>
-                    </div>
+            
+            <div id="chartButtonsContainer">
+                <div id="chartButtons" class="flex gap-2">
+                    <button onclick="loadReport('pie')" class="chart-tab" id="pieTab">
+                        <i class="fas fa-chart-pie mr-2"></i>Pie
+                    </button>
+                    <button onclick="loadReport('bar')" class="chart-tab" id="barTab">
+                        <i class="fas fa-chart-bar mr-2"></i>Bar
+                    </button>
+                    <button onclick="loadReport('line')" class="chart-tab active" id="lineTab">
+                        <i class="fas fa-chart-line mr-2"></i>Line
+                    </button>
+                    <button onclick="loadReport('scatter')" class="chart-tab" id="scatterTab">
+                        <i class="fas fa-chart-scatter mr-2"></i>Scatter
+                    </button>
                 </div>
-
-                <div class="contact-form">
-                    <div id="status-message" class="status-message"></div>
+            </div>
+            <div>
+                <canvas id="postureChart"></canvas>
+            </div>
+            <div id="nb">
+                <div class="metrics-grid grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-xl shadow-sm">
+                        <h3 class="font-semibold text-gray-800 mb-3">Latest Metrics</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Forward Head:</span>
+                                <span class="font-medium" id="latestForwardHead">0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Shoulder Alignment:</span>
+                                <span class="font-medium" id="latestShoulderAlign">0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Back Curvature:</span>
+                                <span class="font-medium" id="latestBackCurvature">0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Left Arm Angle:</span>
+                                <span class="font-medium" id="latestLeftArmAngle">0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Right Arm Angle:</span>
+                                <span class="font-medium" id="latestRightArmAngle">0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Left Leg Angle:</span>
+                                <span class="font-medium" id="latestLeftLegAngle">0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Right Leg Angle:</span>
+                                <span class="font-medium" id="latestRightLegAngle">0.00</span>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <form id="contactForm">
-                        <div class="form-group floating-label-group">
-                            <input type="text" id="name" class="form-control" placeholder=" " required>
-                            <label for="name" class="floating-label">Your Name</label>
-                        </div>
-
-                        <div class="form-group floating-label-group">
-                            <input type="email" id="email" class="form-control" placeholder=" " required>
-                            <label for="email" class="floating-label">Email Address</label>
-                        </div>
-
-                        <div class="form-group floating-label-group">
-                            <input type="text" id="subject" class="form-control" placeholder=" ">
-                            <label for="subject" class="floating-label">Subject (Optional)</label>
-                        </div>
-
-                        <div class="form-group floating-label-group">
-                            <textarea id="message" class="form-control" placeholder=" " required></textarea>
-                            <label for="message" class="floating-label">Your Message</label>
-                        </div>
-
-                        <button type="submit" class="submit-btn">
-                            Send Message <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </form>
+                    <div class="bg-white p-4 rounded-xl shadow-sm">
+                        <h3 class="font-semibold text-gray-800 mb-3">Recommendations</h3>
+                        <ul class="text-sm text-gray-600 space-y-2" id="recommendations">
+                            <li><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Start analysis to get personalized recommendations</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </div>
+    
+    <div id="navbar">
+        <i class="fas fa-home nav-item active" onclick="showView('analyse')" id="analyseTab"></i>
+        <i class="fas fa-chart-line nav-item" onclick="showView('report')" id="reportTab"></i>
+        <i class="fas fa-play nav-item" onclick="startAnalysis()" id="startAnalysisTab"></i>
+        <i class="fas fa-sync-alt nav-item" onclick="switchCamera()" id="switchCameraTab"></i>
+        <i class="fas fa-save nav-item" onclick="saveData()" id="saveDataTab"></i>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const contactForm = document.getElementById('contactForm');
-            const statusMessage = document.getElementById('status-message');
+        const { jsPDF } = window.jspdf;
+        const videoElement = document.getElementById('video');
+        const canvasElement = document.getElementById('canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const postureStatus = document.getElementById('postureStatus');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const analysisDiv = document.getElementById('analysis');
+        const reportView = document.getElementById('reportView');
+        let latestPostureData = {};
+        let postureChart = null;
+        let latestChartData = null;
+        let currentFacingMode = 'environment'; // Default to back camera
 
-            contactForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Get form values
-                const name = document.getElementById('name').value;
-                const email = document.getElementById('email').value;
-                const subject = document.getElementById('subject').value;
-                const message = document.getElementById('message').value;
-                
-                // Simple validation
-                if (!name || !email || !message) {
-                    showStatus('Please fill in all required fields', 'error');
-                    return;
-                }
-                
-                if (!validateEmail(email)) {
-                    showStatus('Please enter a valid email address', 'error');
-                    return;
-                }
-                
-                // Here you would normally send the form data to a server
-                // For demonstration, we'll simulate a successful submission
-                showStatus('Your message has been sent successfully!', 'success');
-                
-                // Reset form
-                contactForm.reset();
-                
-                // Hide success message after 5 seconds
-                setTimeout(() => {
-                    statusMessage.style.display = 'none';
-                }, 5000);
-            });
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyqWAm0PFW-MjYxwYYolPnwXWGDmMFnAu0lrYijhbAeBk4iYwvgYSvRQHndU7tWDYYq8A/exec'; // Replace with your deployed script URL
+
+        // Initialize MediaPipe Pose
+        const pose = new Pose({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
+        });
+        pose.setOptions({
+            modelComplexity: 1,
+            smoothLandmarks: true,
+            enableSegmentation: false,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+        pose.onResults(onResults);
+
+        // Initialize camera
+        let camera = new Camera(videoElement, {
+            onFrame: async () => {
+                await pose.send({ image: videoElement });
+            },
+            width: 640,
+            height: 480,
+            facingMode: currentFacingMode
+        });
+
+        function startAnalysis() {
+            camera.start();
+            analysisDiv.classList.remove('hidden');
+            postureStatus.textContent = 'Analyzing your posture...';
+            statusIndicator.className = 'status-indicator status-good';
             
-            function showStatus(message, type) {
-                statusMessage.textContent = message;
-                statusMessage.className = 'status-message ' + type;
+            // Set canvas size to match video
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+        }
+
+        async function switchCamera() {
+            try {
+                // Stop current camera
+                await camera.stop();
+
+                // Toggle facing mode
+                currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+
+                // Reinitialize camera with new facing mode
+                camera = new Camera(videoElement, {
+                    onFrame: async () => {
+                        await pose.send({ image: videoElement });
+                    },
+                    width: 640,
+                    height: 480,
+                    facingMode: currentFacingMode
+                });
+                await camera.start();
+                postureStatus.textContent = `Analyzing posture (${currentFacingMode === 'environment' ? 'Back' : 'Front'} camera)...`;
+                statusIndicator.className = 'status-indicator status-good';
+            } catch (error) {
+                alert('Error switching camera: ' + error.message);
+            }
+        }
+
+        function onResults(results) {
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.poseLandmarks) {
+                drawLandmarks(results.poseLandmarks);
+                analyzePosture(results.poseLandmarks);
+            }
+        }
+
+        function drawLandmarks(landmarks) {
+            // Draw skeleton with modern styling
+            const connections = [
+                [11, 12], [11, 13], [12, 14], [13, 15], [14, 16], // Upper body
+                [23, 24], [23, 25], [24, 26], [25, 27], [26, 28], // Lower body
+                [11, 23], [12, 24] // Torso
+            ];
+            
+            // Draw connections first
+            canvasCtx.strokeStyle = 'rgba(99, 102, 241, 0.8)';
+            canvasCtx.lineWidth = 4;
+            for (const [start, end] of connections) {
+                if (landmarks[start] && landmarks[end]) {
+                    canvasCtx.beginPath();
+                    canvasCtx.moveTo(landmarks[start].x * canvasElement.width, landmarks[start].y * canvasElement.height);
+                    canvasCtx.lineTo(landmarks[end].x * canvasElement.width, landmarks[end].y * canvasElement.height);
+                    canvasCtx.stroke();
+                }
             }
             
-            function validateEmail(email) {
-                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return re.test(email);
+            // Then draw landmarks
+            for (const landmark of landmarks) {
+                const gradient = canvasCtx.createRadialGradient(
+                    landmark.x * canvasElement.width, landmark.y * canvasElement.height, 0,
+                    landmark.x * canvasElement.width, landmark.y * canvasElement.height, 8
+                );
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+                gradient.addColorStop(1, 'rgba(99, 102, 241, 0.8)');
+                
+                canvasCtx.beginPath();
+                canvasCtx.arc(landmark.x * canvasElement.width, landmark.y * canvasElement.height, 6, 0, 2 * Math.PI);
+                canvasCtx.fillStyle = gradient;
+                canvasCtx.fill();
+                canvasCtx.strokeStyle = 'rgba(99, 102, 241, 1)';
+                canvasCtx.lineWidth = 1.5;
+                canvasCtx.stroke();
+            }
+        }
+
+        function calculateAngle(point1, point2, point3) {
+            // Calculate angle between three points (in degrees)
+            const vector1 = { x: point1.x - point2.x, y: point1.y - point2.y };
+            const vector2 = { x: point3.x - point2.x, y: point3.y - point2.y };
+            const dotProduct = vector1.x * vector2.x + vector1.y * vector2.y;
+            const magnitude1 = Math.sqrt(vector1.x ** 2 + vector1.y ** 2);
+            const magnitude2 = Math.sqrt(vector2.x ** 2 + vector2.y ** 2);
+            const cosTheta = dotProduct / (magnitude1 * magnitude2);
+            return Math.acos(Math.max(-1, Math.min(1, cosTheta))) * (180 / Math.PI);
+        }
+
+        function analyzePosture(landmarks) {
+            // Existing metrics
+            const nose = landmarks[0];
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+            const leftHip = landmarks[23];
+            const rightHip = landmarks[24];
+            const leftElbow = landmarks[13];
+            const leftWrist = landmarks[15];
+            const rightElbow = landmarks[14];
+            const rightWrist = landmarks[16];
+            const leftKnee = landmarks[25];
+            const leftAnkle = landmarks[27];
+            const rightKnee = landmarks[26];
+            const rightAnkle = landmarks[28];
+
+            const shoulderMidpointX = (leftShoulder.x + rightShoulder.x) / 2;
+            const shoulderMidpointY = (leftShoulder.y + rightShoulder.y) / 2;
+            const hipMidpointY = (leftHip.y + rightHip.y) / 2;
+            
+            const forwardHeadDistance = Math.abs(nose.x - shoulderMidpointX);
+            const shoulderAlignment = Math.abs(leftShoulder.y - rightShoulder.y);
+            
+            // New metrics
+            const backCurvature = Math.abs(shoulderMidpointY - hipMidpointY); // Simplified curvature
+            const leftArmAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
+            const rightArmAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
+            const leftLegAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
+            const rightLegAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
+
+            let status = 'Good posture detected! Keep it up!';
+            let statusClass = 'status-good';
+            let recommendations = [];
+            
+            if (forwardHeadDistance > 0.1) {
+                recommendations.push('• Forward head posture (try chin tucks)');
+            }
+            if (shoulderAlignment > 0.05) {
+                recommendations.push('• Uneven shoulders (try shoulder rolls)');
+            }
+            if (backCurvature > 0.2) {
+                recommendations.push('• Excessive back curvature (try core strengthening exercises)');
+            }
+            if (leftArmAngle < 150 || rightArmAngle < 150) {
+                recommendations.push('• Arm angles too bent (try arm stretches)');
+            }
+            if (leftLegAngle < 160 || rightLegAngle < 160) {
+                recommendations.push('• Leg angles misaligned (try leg alignment exercises)');
+            }
+
+            if (recommendations.length > 0) {
+                statusClass = 'status-warning';
+                status = 'Posture issues detected:\n' + recommendations.join('\n');
             }
             
-            // Add floating label functionality
-            const floatingInputs = document.querySelectorAll('.form-control');
-            floatingInputs.forEach(input => {
-                // Check if input has value on page load (for browser autofill)
-                if (input.value) {
-                    input.nextElementSibling.classList.add('active');
-                }
+            postureStatus.innerHTML = status.split('\n').map(line => 
+                line.startsWith('•') ? `<span style="display: inline-block; width: 20px;"></span>${line}` : line
+            ).join('<br>');
+            statusIndicator.className = 'status-indicator ' + statusClass;
+
+            // Update recommendations
+            const recommendationsList = document.getElementById('recommendations');
+            recommendationsList.innerHTML = recommendations.length > 0 
+                ? recommendations.map(rec => `<li><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>${rec.slice(2)}</li>`).join('')
+                : '<li><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Good posture! Maintain this position.</li>';
+            
+            // Update latest metrics display
+            document.getElementById('latestForwardHead').textContent = forwardHeadDistance.toFixed(4);
+            document.getElementById('latestShoulderAlign').textContent = shoulderAlignment.toFixed(4);
+            document.getElementById('latestBackCurvature').textContent = backCurvature.toFixed(4);
+            document.getElementById('latestLeftArmAngle').textContent = leftArmAngle.toFixed(2);
+            document.getElementById('latestRightArmAngle').textContent = rightArmAngle.toFixed(2);
+            document.getElementById('latestLeftLegAngle').textContent = leftLegAngle.toFixed(2);
+            document.getElementById('latestRightLegAngle').textContent = rightLegAngle.toFixed(2);
+            
+            // Store latest posture data
+            latestPostureData = { 
+                timestamp: new Date().toISOString(),
+                userId: 'user1',
+                forwardHeadDistance,
+                shoulderAlignment,
+                backCurvature,
+                leftArmAngle,
+                rightArmAngle,
+                leftLegAngle,
+                rightLegAngle
+            };
+        }
+
+        async function saveData() {
+            if (!latestPostureData.forwardHeadDistance) {
+                alert('No posture data to save. Start analysis first.');
+                return;
+            }
+            
+            try {
+                postureStatus.textContent = 'Saving data...';
+                statusIndicator.className = 'status-indicator status-warning';
                 
-                input.addEventListener('focus', () => {
-                    input.nextElementSibling.classList.add('active');
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'saveData',
+                        data: latestPostureData
+                    })
                 });
                 
-                input.addEventListener('blur', () => {
-                    if (!input.value) {
-                        input.nextElementSibling.classList.remove('active');
+                const result = await response.json();
+                if (result.status === 'success') {
+                    postureStatus.textContent = 'Data saved successfully!';
+                    statusIndicator.className = 'status-indicator status-good';
+                    
+                    // Show a temporary success message
+                    const originalText = postureStatus.textContent;
+                    postureStatus.textContent = '✓ Data saved to cloud!';
+                    setTimeout(() => {
+                        postureStatus.textContent = originalText;
+                    }, 2000);
+                } else {
+                    throw new Error(result.message || 'Failed to save data');
+                }
+            } catch (error) {
+                postureStatus.textContent = 'Error saving data: ' + error.message;
+                statusIndicator.className = 'status-indicator status-bad';
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadReport(chartType = 'line') {
+            try {
+                // Show loading state
+                const chartCanvas = document.getElementById('postureChart');
+                const ctx = chartCanvas.getContext('2d');
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#9ca3af';
+                ctx.textAlign = 'center';
+                ctx.fillText('Loading posture data...', chartCanvas.width/2, chartCanvas.height/2);
+                
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=getData');
+                const data = await response.json();
+                
+                if (data.status === 'error') {
+                    throw new Error(data.message || 'Failed to load data');
+                }
+                
+                // Process data
+                const labels = data.data.map(row => new Date(row.timestamp).toLocaleString());
+                const forwardHeadData = data.data.map(row => row.forwardHeadDistance);
+                const shoulderAlignmentData = data.data.map(row => row.shoulderAlignment);
+                const backCurvatureData = data.data.map(row => row.backCurvature);
+                const leftArmAngleData = data.data.map(row => row.leftArmAngle);
+                const rightArmAngleData = data.data.map(row => row.rightArmAngle);
+                const leftLegAngleData = data.data.map(row => row.leftLegAngle);
+                const rightLegAngleData = data.data.map(row => row.rightLegAngle);
+                
+                latestChartData = { 
+                    labels, 
+                    forwardHeadData, 
+                    shoulderAlignmentData,
+                    backCurvatureData,
+                    leftArmAngleData,
+                    rightArmAngleData,
+                    leftLegAngleData,
+                    rightLegAngleData
+                };
+
+                // Update active tab styling
+                ['pieTab', 'barTab', 'lineTab', 'scatterTab'].forEach(tab => {
+                    document.getElementById(tab).classList.remove('active');
+                });
+                document.getElementById(`${chartType}Tab`).classList.add('active');
+
+                // Configure chart based on type
+                const config = {
+                    data: {
+                        labels: chartType === 'pie' ? [
+                            'Forward Head', 
+                            'Shoulder Alignment', 
+                            'Back Curvature', 
+                            'Left Arm Angle', 
+                            'Right Arm Angle', 
+                            'Left Leg Angle', 
+                            'Right Leg Angle'
+                        ] : labels,
+                        datasets: []
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        size: 14,
+                                        family: "'Inter', sans-serif"
+                                    },
+                                    padding: 20
+                                }
+                            },
+                            title: { 
+                                display: true, 
+                                text: 'Your Posture Analysis', 
+                                font: {
+                                    size: 18,
+                                    family: "'Inter', sans-serif",
+                                    weight: '600'
+                                },
+                                padding: {
+                                    top: 10,
+                                    bottom: 20
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                                titleFont: {
+                                    size: 14,
+                                    family: "'Inter', sans-serif",
+                                    weight: '600'
+                                },
+                                bodyFont: {
+                                    size: 12,
+                                    family: "'Inter', sans-serif"
+                                },
+                                padding: 12,
+                                cornerRadius: 12,
+                                displayColors: true
+                            }
+                        },
+                        scales: chartType !== 'pie' ? {
+                            y: { 
+                                beginAtZero: true, 
+                                title: { 
+                                    display: true, 
+                                    text: 'Value', 
+                                    font: {
+                                        size: 12,
+                                        family: "'Inter', sans-serif",
+                                        weight: '500'
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: { 
+                                title: { 
+                                    display: true, 
+                                    text: 'Time', 
+                                    font: {
+                                        size: 12,
+                                        family: "'Inter', sans-serif",
+                                        weight: '500'
+                                    }
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        } : {}
+                    }
+                };
+
+                // Dataset configuration
+                if (chartType === 'pie') {
+                    config.type = 'pie';
+                    const latestData = data.data[data.data.length - 1] || {};
+                    config.data.datasets = [{
+                        data: [
+                            latestData.forwardHeadDistance || 0,
+                            latestData.shoulderAlignment || 0,
+                            latestData.backCurvature || 0,
+                            latestData.leftArmAngle || 0,
+                            latestData.rightArmAngle || 0,
+                            latestData.leftLegAngle || 0,
+                            latestData.rightLegAngle || 0
+                        ],
+                        backgroundColor: [
+                            'rgba(99, 102, 241, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(244, 63, 94, 0.8)',
+                            'rgba(236, 72, 153, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(234, 179, 8, 0.8)',
+                            'rgba(168, 85, 247, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(99, 102, 241, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(244, 63, 94, 1)',
+                            'rgba(236, 72, 153, 1)',
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(234, 179, 8, 1)',
+                            'rgba(168, 85, 247, 1)'
+                        ],
+                        borderWidth: 1
+                    }];
+                } else {
+                    config.type = chartType === 'scatter' ? 'scatter' : chartType;
+                    config.data.datasets = [
+                        {
+                            label: 'Forward Head Distance',
+                            data: forwardHeadData,
+                            borderColor: 'rgba(99, 102, 241, 0.8)',
+                            backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                            fill: chartType === 'line' || chartType === 'bar',
+                            tension: chartType === 'line' ? 0.4 : 0,
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+                            pointRadius: chartType === 'scatter' ? 6 : 3,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: 'Shoulder Alignment',
+                            data: shoulderAlignmentData,
+                            borderColor: 'rgba(16, 185, 129, 0.8)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            fill: chartType === 'line' || chartType === 'bar',
+                            tension: chartType === 'line' ? 0.4 : 0,
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                            pointRadius: chartType === 'scatter' ? 6 : 3,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: 'Back Curvature',
+                            data: backCurvatureData,
+                            borderColor: 'rgba(244, 63, 94, 0.8)',
+                            backgroundColor: 'rgba(244, 63, 94, 0.2)',
+                            fill: chartType === 'line' || chartType === 'bar',
+                            tension: chartType === 'line' ? 0.4 : 0,
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(244, 63, 94, 1)',
+                            pointRadius: chartType === 'scatter' ? 6 : 3,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: 'Left Arm Angle',
+                            data: leftArmAngleData,
+                            borderColor: 'rgba(236, 72, 153, 0.8)',
+                            backgroundColor: 'rgba(236, 72, 153, 0.2)',
+                            fill: chartType === 'line' || chartType === 'bar',
+                            tension: chartType === 'line' ? 0.4 : 0,
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(236, 72, 153, 1)',
+                            pointRadius: chartType === 'scatter' ? 6 : 3,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: 'Right Arm Angle',
+                            data: rightArmAngleData,
+                            borderColor: 'rgba(59, 130, 246, 0.8)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            fill: chartType === 'line' || chartType === 'bar',
+                            tension: chartType === 'line' ? 0.4 : 0,
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                            pointRadius: chartType === 'scatter' ? 6 : 3,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: 'Left Leg Angle',
+                            data: leftLegAngleData,
+                            borderColor: 'rgba(234, 179, 8, 0.8)',
+                            backgroundColor: 'rgba(234, 179, 8, 0.2)',
+                            fill: chartType === 'line' || chartType === 'bar',
+                            tension: chartType === 'line' ? 0.4 : 0,
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(234, 179, 8, 1)',
+                            pointRadius: chartType === 'scatter' ? 6 : 3,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: 'Right Leg Angle',
+                            data: rightLegAngleData,
+                            borderColor: 'rgba(168, 85, 247, 0.8)',
+                            backgroundColor: 'rgba(168, 85, 247, 0.2)',
+                            fill: chartType === 'line' || chartType === 'bar',
+                            tension: chartType === 'line' ? 0.4 : 0,
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(168, 85, 247, 1)',
+                            pointRadius: chartType === 'scatter' ? 6 : 3,
+                            pointHoverRadius: 8
+                        }
+                    ];
+                }
+
+                // Destroy existing chart if it exists
+                if (postureChart) {
+                    postureChart.destroy();
+                }
+
+                // Create new chart with animation
+                postureChart = new Chart(ctx, {
+                    ...config,
+                    options: {
+                        ...config.options,
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeOutQuart'
+                        }
                     }
                 });
+                
+            } catch (error) {
+                console.error('Error loading report:', error);
+                const ctx = chartCanvas.getContext('2d');
+                ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#ef4444';
+                ctx.textAlign = 'center';
+                ctx.fillText('Failed to load data. Please try again.', chartCanvas.width/2, chartCanvas.height/2);
+            }
+        }
+
+        function exportToPDF() {
+            if (!postureChart || !latestChartData) {
+                alert('No chart data available. Load a report first.');
+                return;
+            }
+            
+            // Create PDF with modern styling
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
             });
-        });
+            
+            // Add logo and header
+            doc.setFontSize(28);
+            doc.setTextColor(99, 102, 241);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PostureAI Report', 105, 20, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.setTextColor(100, 116, 139);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 28, { align: 'center' });
+            
+            // Add divider
+            doc.setDrawColor(99, 102, 241);
+            doc.setLineWidth(0.5);
+            doc.line(20, 32, 190, 32);
+            
+            // Add chart
+            const chartCanvas = document.getElementById('postureChart');
+            const chartDataUrl = chartCanvas.toDataURL('image/png');
+            doc.addImage(chartDataUrl, 'PNG', 20, 40, 170, 80);
+            
+            // Add posture metrics
+            doc.setFontSize(16);
+            doc.setTextColor(30, 41, 59);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Key Metrics', 20, 130);
+            
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(71, 85, 105);
+            
+            const metrics = [
+                { label: 'Forward Head Distance', value: latestPostureData.forwardHeadDistance?.toFixed(4) || 'N/A' },
+                { label: 'Shoulder Alignment', value: latestPostureData.shoulderAlignment?.toFixed(4) || 'N/A' },
+                { label: 'Back Curvature', value: latestPostureData.backCurvature?.toFixed(4) || 'N/A' },
+                { label: 'Left Arm Angle', value: latestPostureData.leftArmAngle?.toFixed(2) || 'N/A' },
+                { label: 'Right Arm Angle', value: latestPostureData.rightArmAngle?.toFixed(2) || 'N/A' },
+                { label: 'Left Leg Angle', value: latestPostureData.leftLegAngle?.toFixed(2) || 'N/A' },
+                { label: 'Right Leg Angle', value: latestPostureData.rightLegAngle?.toFixed(2) || 'N/A' },
+                { label: 'Analysis Time', value: new Date(latestPostureData.timestamp).toLocaleString() || 'N/A' }
+            ];
+            
+            metrics.forEach((metric, i) => {
+                doc.text(`${metric.label}:`, 20, 140 + (i * 10));
+                doc.text(metric.value, 70, 140 + (i * 10));
+            });
+            
+            // Add status
+            doc.setFontSize(14);
+            doc.setTextColor(30, 41, 59);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Posture Status', 20, 220);
+            
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            const statusText = postureStatus.innerText.split('\n');
+            statusText.forEach((line, i) => {
+                doc.text(line, 20, 230 + (i * 7));
+            });
+            
+            // Add footer
+            doc.setFontSize(10);
+            doc.setTextColor(100, 116, 139);
+            doc.text('© PostureAI - AI-powered posture analysis', 105, 290, { align: 'center' });
+            
+            // Save PDF with timestamp
+            doc.save(`PostureAI_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+        }
+
+        function showView(view) {
+            // Update tab styles
+            document.getElementById('analyseTab').classList.remove('active');
+            document.getElementById('reportTab').classList.remove('active');
+            document.getElementById(`${view}Tab`).classList.add('active');
+
+            // Toggle views
+            analysisDiv.style.display = view === 'analyse' ? 'block' : 'none';
+            reportView.style.display = view === 'report' ? 'block' : 'none';
+
+            if (view === 'report') {
+                loadReport('line');
+            }
+        }
+        
+        // Initialize with analysis view
+        showView('analyse');
     </script>
 </body>
 </html>
