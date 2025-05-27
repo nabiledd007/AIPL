@@ -24,6 +24,7 @@
             margin: 0;
             overflow: hidden;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f3f4f6;
         }
         
         video, canvas {
@@ -146,6 +147,7 @@
         
         #chartButtons {
             display: flex;
+            gap Shelly: 1fr;
             gap: 6px;
             flex-wrap: wrap;
             justify-content: center;
@@ -234,6 +236,31 @@
         
         .status-bad {
             background: #ef4444;
+        }
+        
+        .color-picker-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+        }
+        
+        .color-picker {
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            position: absolute;
+        }
+        
+        .color-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         
         @keyframes fadeIn {
@@ -447,6 +474,10 @@
         <i class="fas fa-play nav-item" onclick="startAnalysis()" id="startAnalysisTab"></i>
         <i class="fas fa-sync-alt nav-item" onclick="switchCamera()" id="switchCameraTab"></i>
         <i class="fas fa-save nav-item" onclick="saveData()" id="saveDataTab"></i>
+        <div class="nav-item color-picker-container">
+            <input type="color" class="color-picker" id="colorPicker" value="#18D140">
+            <div class="color-indicator" id="colorIndicator" style="background-color: #18D140;"></div>
+        </div>
     </div>
 
     <script>
@@ -458,12 +489,15 @@
         const statusIndicator = document.getElementById('statusIndicator');
         const analysisDiv = document.getElementById('analysis');
         const reportView = document.getElementById('reportView');
+        const colorPicker = document.getElementById('colorPicker');
+        const colorIndicator = document.getElementById('colorIndicator');
         let latestPostureData = {};
         let postureChart = null;
         let latestChartData = null;
-        let currentFacingMode = 'environment'; // Default to back camera
+        let currentFacingMode = 'environment';
+        let currentColor = '#18D140';
 
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbweXaq-kVNeqy-GrLfqKEQ-eerXfKoErFVpV_MgYeIVJ5y7_r50yF82S1sgw5jJsl7X/exec'; // Replace with your deployed script URL
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbweXaq-kVNeqy-GrLfqKEQ-eerXfKoErFVpV_MgYeIVJ5y7_r50yF82S1sgw5jJsl7X/exec';
 
         // Initialize MediaPipe Pose
         const pose = new Pose({
@@ -488,26 +522,25 @@
             facingMode: currentFacingMode
         });
 
+        // Handle color picker change
+        colorPicker.addEventListener('input', (e) => {
+            currentColor = e.target.value;
+            colorIndicator.style.backgroundColor = currentColor;
+        });
+
         function startAnalysis() {
             camera.start();
             analysisDiv.classList.remove('hidden');
             postureStatus.textContent = 'Analyzing your posture...';
             statusIndicator.className = 'status-indicator status-good';
-            
-            // Set canvas size to match video
             canvasElement.width = videoElement.videoWidth;
             canvasElement.height = videoElement.videoHeight;
         }
 
         async function switchCamera() {
             try {
-                // Stop current camera
                 await camera.stop();
-
-                // Toggle facing mode
                 currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-
-                // Reinitialize camera with new facing mode
                 camera = new Camera(videoElement, {
                     onFrame: async () => {
                         await pose.send({ image: videoElement });
@@ -535,15 +568,14 @@
         }
 
         function drawLandmarks(landmarks) {
-            // Draw skeleton with modern styling
             const connections = [
-                [11, 12], [11, 13], [12, 14], [13, 15], [14, 16], // Upper body
-                [23, 24], [23, 25], [24, 26], [25, 27], [26, 28], // Lower body
-                [11, 23], [12, 24] // Torso
+                [11, 12], [11, 13], [12, 14], [13, 15], [14, 16],
+                [23, 24], [23, 25], [24, 26], [25, 27], [26, 28],
+                [11, 23], [12, 24]
             ];
             
-            // Draw connections first
-            canvasCtx.strokeStyle = 'rgba(24, 209, 64, 1)';
+            // Draw connections
+            canvasCtx.strokeStyle = currentColor;
             canvasCtx.lineWidth = 9;
             for (const [start, end] of connections) {
                 if (landmarks[start] && landmarks[end]) {
@@ -554,27 +586,34 @@
                 }
             }
             
-            // Then draw landmarks
+            // Draw landmarks
             for (const landmark of landmarks) {
                 const gradient = canvasCtx.createRadialGradient(
                     landmark.x * canvasElement.width, landmark.y * canvasElement.height, 0,
                     landmark.x * canvasElement.width, landmark.y * canvasElement.height, 8
                 );
                 gradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
-                gradient.addColorStop(1, 'rgba(24, 209, 64, 1)');
-                
+                gradient.addColorStop(1, currentColor);
                 canvasCtx.beginPath();
                 canvasCtx.arc(landmark.x * canvasElement.width, landmark.y * canvasElement.height, 6, 0, 2 * Math.PI);
                 canvasCtx.fillStyle = gradient;
                 canvasCtx.fill();
-                canvasCtx.strokeStyle = 'rgba(18, 139, 44, 1)';
+                canvasCtx.strokeStyle = darkenColor(currentColor, 0.7);
                 canvasCtx.lineWidth = 1.5;
                 canvasCtx.stroke();
             }
         }
 
+        // Utility function to darken a hex color
+        function darkenColor(hex, factor) {
+            hex = hex.replace('#', '');
+            const r = Math.max(0, Math.min(255, Math.floor(parseInt(hex.slice(0, 2), 16) * factor)));
+            const g = Math.max(0, Math.min(255, Math.floor(parseInt(hex.slice(2, 4), 16) * factor)));
+            const b = Math.max(0, Math.min(255, Math.floor(parseInt(hex.slice(4, 6), 16) * factor)));
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
         function calculateAngle(point1, point2, point3) {
-            // Calculate angle between three points (in degrees)
             const vector1 = { x: point1.x - point2.x, y: point1.y - point2.y };
             const vector2 = { x: point3.x - point2.x, y: point3.y - point2.y };
             const dotProduct = vector1.x * vector2.x + vector1.y * vector2.y;
@@ -585,7 +624,6 @@
         }
 
         function analyzePosture(landmarks) {
-            // Existing metrics
             const nose = landmarks[0];
             const leftShoulder = landmarks[11];
             const rightShoulder = landmarks[12];
@@ -606,9 +644,7 @@
             
             const forwardHeadDistance = Math.abs(nose.x - shoulderMidpointX);
             const shoulderAlignment = Math.abs(leftShoulder.y - rightShoulder.y);
-            
-            // New metrics
-            const backCurvature = Math.abs(shoulderMidpointY - hipMidpointY); // Simplified curvature
+            const backCurvature = Math.abs(shoulderMidpointY - hipMidpointY);
             const leftArmAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
             const rightArmAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
             const leftLegAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
@@ -644,13 +680,11 @@
             ).join('<br>');
             statusIndicator.className = 'status-indicator ' + statusClass;
 
-            // Update recommendations
             const recommendationsList = document.getElementById('recommendations');
             recommendationsList.innerHTML = recommendations.length > 0 
                 ? recommendations.map(rec => `<li><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>${rec.slice(2)}</li>`).join('')
                 : '<li><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Good posture! Maintain this position.</li>';
             
-            // Update latest metrics display
             document.getElementById('latestForwardHead').textContent = forwardHeadDistance.toFixed(4);
             document.getElementById('latestShoulderAlign').textContent = shoulderAlignment.toFixed(4);
             document.getElementById('latestBackCurvature').textContent = backCurvature.toFixed(4);
@@ -659,7 +693,6 @@
             document.getElementById('latestLeftLegAngle').textContent = leftLegAngle.toFixed(2);
             document.getElementById('latestRightLegAngle').textContent = rightLegAngle.toFixed(2);
             
-            // Store latest posture data
             latestPostureData = { 
                 timestamp: new Date().toISOString(),
                 userId: 'user1',
@@ -707,7 +740,6 @@
                 const shoulderAlignmentData = data.map(row => row.shoulderAlignment);
                 latestChartData = { labels, forwardHeadData, shoulderAlignmentData };
 
-                // Update chart tab styles
                 ['pieTab', 'barTab', 'lineTab', 'scatterTab'].forEach(tab => {
                     document.getElementById(tab).classList.remove('active');
                 });
@@ -716,12 +748,10 @@
                 reportView.classList.remove('hidden');
                 const ctx = document.getElementById('postureChart').getContext('2d');
 
-                // Destroy existing chart
                 if (postureChart) {
                     postureChart.destroy();
                 }
 
-                // Configure chart
                 const config = {
                     data: {
                         labels: chartType === 'pie' ? ['Forward Head', 'Shoulder Alignment'] : labels,
@@ -775,26 +805,24 @@
                     }
                 }
 
-                // Create new chart
                 postureChart = new Chart(ctx, config);
             } catch (error) {
                 alert('Error loading report: ' + error.message);
             }
         }
+
         function exportToPDF() {
             if (!postureChart || !latestChartData) {
                 alert('No chart data available. Load a report first.');
                 return;
             }
             
-            // Create PDF with modern styling
             const doc = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
                 format: 'a4'
             });
             
-            // Add logo and header
             doc.setFontSize(28);
             doc.setTextColor(99, 102, 241);
             doc.setFont('helvetica', 'bold');
@@ -805,17 +833,14 @@
             doc.setFont('helvetica', 'normal');
             doc.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 28, { align: 'center' });
             
-            // Add divider
             doc.setDrawColor(99, 102, 241);
             doc.setLineWidth(0.5);
             doc.line(20, 32, 190, 32);
             
-            // Add chart
             const chartCanvas = document.getElementById('postureChart');
             const chartDataUrl = chartCanvas.toDataURL('image/png');
             doc.addImage(chartDataUrl, 'PNG', 20, 40, 170, 80);
             
-            // Add posture metrics
             doc.setFontSize(16);
             doc.setTextColor(30, 41, 59);
             doc.setFont('helvetica', 'bold');
@@ -841,7 +866,6 @@
                 doc.text(metric.value, 70, 140 + (i * 10));
             });
             
-            // Add status
             doc.setFontSize(14);
             doc.setTextColor(30, 41, 59);
             doc.setFont('helvetica', 'bold');
@@ -854,31 +878,24 @@
                 doc.text(line, 20, 230 + (i * 7));
             });
             
-            // Add footer
             doc.setFontSize(10);
             doc.setTextColor(100, 116, 139);
             doc.text('© PostureAI - AI-powered posture analysis', 105, 290, { align: 'center' });
             
-            // Save PDF with timestamp
             doc.save(`PostureAI_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
         }
 
         function showView(view) {
-            // Update tab styles
             document.getElementById('analyseTab').classList.remove('active');
             document.getElementById('reportTab').classList.remove('active');
             document.getElementById(`${view}Tab`).classList.add('active');
-
-            // Toggle views
             analysisDiv.style.display = view === 'analyse' ? 'block' : 'none';
             reportView.style.display = view === 'report' ? 'block' : 'none';
-
             if (view === 'report') {
                 loadReport('line');
             }
         }
         
-        // Initialize with analysis view
         showView('analyse');
     </script>
 </body>
