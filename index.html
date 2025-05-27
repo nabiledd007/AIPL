@@ -844,7 +844,7 @@
 
         async function saveData() {
             if (!latestPostureData.forwardHeadDistance) {
-                alert('No posture data to save. Start analysis first.');
+               
                 return;
             }
             try {
@@ -854,12 +854,12 @@
                 });
                 const result = await response.json();
                 if (result.status === 'success') {
-                    alert('Data saved to Google Sheets!');
+                    
                 } else {
-                    alert('Error saving data: ' + result.message);
+                   
                 }
             } catch (error) {
-                alert('Error: ' + error.message);
+               
             }
         }
 
@@ -868,7 +868,7 @@
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 const data = await response.json();
                 if (data.status === 'error') {
-                    alert('Error loading data: ' + data.message);
+                    
                     return;
                 }
                 const labels = data.map(row => new Date(row.timestamp).toLocaleString());
@@ -943,13 +943,13 @@
 
                 postureChart = new Chart(ctx, config);
             } catch (error) {
-                alert('Error loading report: ' + error.message);
+                
             }
         }
 
         function exportToPDF() {
             if (!postureChart || !latestChartData) {
-                alert('No chart data available. Load a report first.');
+               
                 return;
             }
 
