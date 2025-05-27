@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Postural Analysis Fujikura</title>
+    <title>Posture Analysis Fujikura</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --primary: #6366f1;
@@ -19,14 +15,105 @@
             --light: #f8fafc;
             --gray: #94a3b8;
         }
-        
+
         body {
             margin: 0;
             overflow: hidden;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #f3f4f6;
         }
-        
+
+        /* Splash Screen Styles */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+
+        #splashScreen.hidden {
+            opacity: 0;
+            transform: translateY(-100%);
+            pointer-events: none;
+        }
+
+        .logo-container {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        .logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--light);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .developer {
+            font-size: 1.25rem;
+            color: var(--light);
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid var(--light);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .enter-button {
+            background: var(--primary-dark);
+            color: var(--light);
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 1.125rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .enter-button:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Main App Styles */
         video, canvas {
             position: absolute;
             top: 0;
@@ -37,11 +124,11 @@
             z-index: 1;
             border-radius: 16px;
         }
-        
+
         canvas {
             z-index: 2;
         }
-        
+
         #navbar {
             position: fixed;
             bottom: 20px;
@@ -58,7 +145,7 @@
             z-index: 100;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .nav-item {
             color: var(--gray);
             font-size: 20px;
@@ -72,19 +159,19 @@
             cursor: pointer;
             background: transparent;
         }
-        
+
         .nav-item:hover {
             background: rgba(99, 102, 241, 0.1);
             color: var(--primary);
             transform: translateY(-5px);
         }
-        
+
         .nav-item.active {
             background: var(--primary);
             color: white;
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
-        
+
         #analysis {
             position: fixed;
             top: 20px;
@@ -99,7 +186,7 @@
             max-width: 500px;
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        
+
         #reportView {
             position: fixed;
             top: 60px;
@@ -118,7 +205,7 @@
             border: 1px solid rgba(0, 0, 0, 0.05);
             animation: fadeIn 0.3s ease-in-out;
         }
-        
+
         #report {
             width: 100%;
             background: white;
@@ -129,14 +216,7 @@
             flex-direction: column;
             gap: 20px;
         }
-        
-        #chartContainer {
-            background: white;
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-        }
-        
+
         #chartButtonsContainer {
             background: white;
             border-radius: 12px;
@@ -144,25 +224,24 @@
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
             margin-bottom: 12px;
         }
-        
+
         #chartButtons {
             display: flex;
-            gap Shelly: 1fr;
             gap: 6px;
             flex-wrap: wrap;
             justify-content: center;
         }
-        
+
         #postureChart {
             width: 100%;
             height: 100%;
             margin-top: 150px;
         }
-        
+
         #nb {
             margin-top: 350px;
         }
-        
+
         .chart-tab {
             padding: 8px 16px;
             border-radius: 8px;
@@ -174,21 +253,21 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        
+
         .chart-tab:hover {
             background: rgba(99, 102, 241, 0.2);
         }
-        
+
         .chart-tab.active {
             background: var(--primary);
             color: white;
         }
-        
+
         button {
             transition: all 0.3s ease;
             border-radius: 8px;
         }
-        
+
         .btn-primary {
             background: var(--primary);
             color: white;
@@ -197,12 +276,12 @@
             font-weight: 500;
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
-        
+
         .btn-primary:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
         }
-        
+
         .btn-danger {
             background: var(--secondary);
             color: white;
@@ -212,12 +291,12 @@
             box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
             font-size: 13px;
         }
-        
+
         .btn-danger:hover {
             background: #e11d48;
             transform: translateY(-2px);
         }
-        
+
         .status-indicator {
             display: inline-block;
             width: 10px;
@@ -225,19 +304,19 @@
             border-radius: 50%;
             margin-right: 8px;
         }
-        
+
         .status-good {
             background: #10b981;
         }
-        
+
         .status-warning {
             background: #f59e0b;
         }
-        
+
         .status-bad {
             background: #ef4444;
         }
-        
+
         .color-picker-container {
             position: relative;
             display: flex;
@@ -246,7 +325,7 @@
             width: 48px;
             height: 48px;
         }
-        
+
         .color-picker {
             width: 100%;
             height: 100%;
@@ -254,7 +333,7 @@
             cursor: pointer;
             position: absolute;
         }
-        
+
         .color-indicator {
             width: 24px;
             height: 24px;
@@ -262,25 +341,43 @@
             border: 2px solid white;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-        
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         @media (max-width: 768px) {
+            #splashScreen .logo-container {
+                width: 120px;
+                height: 120px;
+            }
+
+            #splashScreen .title {
+                font-size: 2rem;
+            }
+
+            #splashScreen .developer {
+                font-size: 1rem;
+            }
+
+            #splashScreen .enter-button {
+                padding: 0.5rem 1.5rem;
+                font-size: 1rem;
+            }
+
             #navbar {
                 bottom: 10px;
                 padding: 8px 12px;
                 gap: 6px;
             }
-            
+
             .nav-item {
                 width: 36px;
                 height: 36px;
                 font-size: 16px;
             }
-            
+
             #analysis {
                 top: 10px;
                 left: 10px;
@@ -288,92 +385,102 @@
                 padding: 12px;
                 max-width: 100%;
             }
-            
+
             #reportView {
                 top: 30px;
                 width: 95%;
                 max-height: calc(100vh - 60px);
                 padding: 12px;
             }
-            
+
             #report {
                 padding: 16px;
                 gap: 12px;
             }
-            
-            #chartContainer {
-                padding: 8px;
-            }
-            
+
             #chartButtonsContainer {
                 padding: 8px;
                 margin-bottom: 8px;
             }
-            
+
             #postureChart {
                 aspect-ratio: 4 / 3;
             }
-            
+
             #chartButtons {
                 gap: 4px;
                 justify-content: center;
             }
-            
+
             .chart-tab {
                 padding: 6px 12px;
                 font-size: 12px;
             }
-            
+
             .metrics-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             h2 {
                 font-size: 1.25rem;
             }
-            
+
             h3 {
                 font-size: 0.875rem;
             }
-            
+
             .btn-danger {
                 padding: 6px 12px;
                 font-size: 12px;
             }
         }
-        
+
         @media (max-width: 480px) {
+            #splashScreen .logo-container {
+                width: 100px;
+                height: 100px;
+            }
+
+            #splashScreen .title {
+                font-size: 1.5rem;
+            }
+
+            #splashScreen .developer {
+                font-size: 0.875rem;
+            }
+
+            #splashScreen .enter-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+
             #report {
                 padding: 8px;
                 gap: 8px;
             }
-            
-            #chartContainer {
-                padding: 6px;
-            }
-            
+
             #chartButtonsContainer {
                 padding: 6px;
             }
-            
+
             #postureChart {
                 aspect-ratio: 1 / 1;
                 padding: 6px;
             }
-            
+
             .chart-tab {
                 padding: 5px 10px;
                 font-size: 11px;
             }
-            
+
             h2 {
                 font-size: 1rem;
             }
-            
+
             h3 {
                 font-size: 0.75rem;
             }
-            
+
             .btn-danger {
                 padding: 5px 10px;
                 font-size: 11px;
@@ -381,10 +488,23 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body>
+    <!-- Splash Screen -->
+    <div id="splashScreen">
+
+        <div >
+        <i class="fa fa-diamond" aria-hidden="true"></i>
+        </div>
+        <h1 class="title">Posture Analysis Fujikura</h1>
+        <p class="developer">Developed by Nabil EDDghoughi</p>
+        <div class="loading-spinner"></div>
+        <button class="enter-button mt-4" onclick="enterApp()">Enter Application</button>
+    </div>
+
+    <!-- Main Application Content -->
     <video id="video" autoplay></video>
     <canvas id="canvas"></canvas>
-    
+
     <div id="analysis" class="hidden">
         <div class="flex items-center mb-2">
             <h3 class="text-lg font-semibold text-gray-800">Posture Analysis</h3>
@@ -392,7 +512,7 @@
         </div>
         <p class="text-gray-600 text-sm" id="postureStatus">Waiting for analysis...</p>
     </div>
-    
+
     <div id="reportView" class="hidden">
         <div id="report">
             <div class="flex justify-between items-center mb-4">
@@ -401,7 +521,7 @@
                     <i class="fas fa-file-pdf mr-2"></i>Export PDF
                 </button>
             </div>
-            
+
             <div id="chartButtonsContainer">
                 <div id="chartButtons" class="flex gap-2">
                     <button onclick="loadReport('pie')" class="chart-tab" id="pieTab">
@@ -456,7 +576,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="bg-white p-4 rounded-xl shadow-sm">
                         <h3 class="font-semibold text-gray-800 mb-3">Recommendations</h3>
                         <ul class="text-sm text-gray-600 space-y-2" id="recommendations">
@@ -467,12 +587,12 @@
             </div>
         </div>
     </div>
-    
+
     <div id="navbar">
         <i class="fas fa-home nav-item active" onclick="showView('analyse')" id="analyseTab"></i>
         <i class="fas fa-chart-line nav-item" onclick="showView('report')" id="reportTab"></i>
         <i class="fas fa-play nav-item" onclick="startAnalysis()" id="startAnalysisTab"></i>
-        <i class="fas fa-sync-alt nav-item" onclick="switchCamera()" id="switchCameraTab"></i>
+       
         <i class="fas fa-save nav-item" onclick="saveData()" id="saveDataTab"></i>
         <div class="nav-item color-picker-container">
             <input type="color" class="color-picker" id="colorPicker" value="#18D140">
@@ -480,8 +600,27 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         const { jsPDF } = window.jspdf;
+
+        // Splash Screen Logic
+        function enterApp() {
+            const splashScreen = document.getElementById('splashScreen');
+            splashScreen.classList.add('hidden');
+            setTimeout(() => {
+                splashScreen.style.display = 'none';
+                showView('analyse');
+            }, 500);
+        }
+
+        // Auto-hide splash screen after 3 seconds
+        setTimeout(enterApp, 3000);
+
+        // Main Application Logic
         const videoElement = document.getElementById('video');
         const canvasElement = document.getElementById('canvas');
         const canvasCtx = canvasElement.getContext('2d');
@@ -573,8 +712,7 @@
                 [23, 24], [23, 25], [24, 26], [25, 27], [26, 28],
                 [11, 23], [12, 24]
             ];
-            
-            // Draw connections
+
             canvasCtx.strokeStyle = currentColor;
             canvasCtx.lineWidth = 9;
             for (const [start, end] of connections) {
@@ -585,8 +723,7 @@
                     canvasCtx.stroke();
                 }
             }
-            
-            // Draw landmarks
+
             for (const landmark of landmarks) {
                 const gradient = canvasCtx.createRadialGradient(
                     landmark.x * canvasElement.width, landmark.y * canvasElement.height, 0,
@@ -604,7 +741,6 @@
             }
         }
 
-        // Utility function to darken a hex color
         function darkenColor(hex, factor) {
             hex = hex.replace('#', '');
             const r = Math.max(0, Math.min(255, Math.floor(parseInt(hex.slice(0, 2), 16) * factor)));
@@ -641,7 +777,7 @@
             const shoulderMidpointX = (leftShoulder.x + rightShoulder.x) / 2;
             const shoulderMidpointY = (leftShoulder.y + rightShoulder.y) / 2;
             const hipMidpointY = (leftHip.y + rightHip.y) / 2;
-            
+
             const forwardHeadDistance = Math.abs(nose.x - shoulderMidpointX);
             const shoulderAlignment = Math.abs(leftShoulder.y - rightShoulder.y);
             const backCurvature = Math.abs(shoulderMidpointY - hipMidpointY);
@@ -653,7 +789,7 @@
             let status = 'Good posture detected! Keep it up!';
             let statusClass = 'status-good';
             let recommendations = [];
-            
+
             if (forwardHeadDistance > 0.1) {
                 recommendations.push('• Forward head posture (try chin tucks)');
             }
@@ -674,17 +810,17 @@
                 statusClass = 'status-warning';
                 status = 'Posture issues detected:\n' + recommendations.join('\n');
             }
-            
-            postureStatus.innerHTML = status.split('\n').map(line => 
+
+            postureStatus.innerHTML = status.split('\n').map(line =>
                 line.startsWith('•') ? `<span style="display: inline-block; width: 20px;"></span>${line}` : line
             ).join('<br>');
             statusIndicator.className = 'status-indicator ' + statusClass;
 
             const recommendationsList = document.getElementById('recommendations');
-            recommendationsList.innerHTML = recommendations.length > 0 
+            recommendationsList.innerHTML = recommendations.length > 0
                 ? recommendations.map(rec => `<li><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>${rec.slice(2)}</li>`).join('')
                 : '<li><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Good posture! Maintain this position.</li>';
-            
+
             document.getElementById('latestForwardHead').textContent = forwardHeadDistance.toFixed(4);
             document.getElementById('latestShoulderAlign').textContent = shoulderAlignment.toFixed(4);
             document.getElementById('latestBackCurvature').textContent = backCurvature.toFixed(4);
@@ -692,8 +828,8 @@
             document.getElementById('latestRightArmAngle').textContent = rightArmAngle.toFixed(2);
             document.getElementById('latestLeftLegAngle').textContent = leftLegAngle.toFixed(2);
             document.getElementById('latestRightLegAngle').textContent = rightLegAngle.toFixed(2);
-            
-            latestPostureData = { 
+
+            latestPostureData = {
                 timestamp: new Date().toISOString(),
                 userId: 'user1',
                 forwardHeadDistance,
@@ -816,40 +952,40 @@
                 alert('No chart data available. Load a report first.');
                 return;
             }
-            
+
             const doc = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
                 format: 'a4'
             });
-            
+
             doc.setFontSize(28);
             doc.setTextColor(99, 102, 241);
             doc.setFont('helvetica', 'bold');
             doc.text('PostureAI Report', 105, 20, { align: 'center' });
-            
+
             doc.setFontSize(12);
             doc.setTextColor(100, 116, 139);
             doc.setFont('helvetica', 'normal');
             doc.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 28, { align: 'center' });
-            
+
             doc.setDrawColor(99, 102, 241);
             doc.setLineWidth(0.5);
             doc.line(20, 32, 190, 32);
-            
+
             const chartCanvas = document.getElementById('postureChart');
             const chartDataUrl = chartCanvas.toDataURL('image/png');
             doc.addImage(chartDataUrl, 'PNG', 20, 40, 170, 80);
-            
+
             doc.setFontSize(16);
             doc.setTextColor(30, 41, 59);
             doc.setFont('helvetica', 'bold');
             doc.text('Key Metrics', 20, 130);
-            
+
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(71, 85, 105);
-            
+
             const metrics = [
                 { label: 'Forward Head Distance', value: latestPostureData.forwardHeadDistance?.toFixed(4) || 'N/A' },
                 { label: 'Shoulder Alignment', value: latestPostureData.shoulderAlignment?.toFixed(4) || 'N/A' },
@@ -860,28 +996,28 @@
                 { label: 'Right Leg Angle', value: latestPostureData.rightLegAngle?.toFixed(2) || 'N/A' },
                 { label: 'Analysis Time', value: new Date(latestPostureData.timestamp).toLocaleString() || 'N/A' }
             ];
-            
+
             metrics.forEach((metric, i) => {
                 doc.text(`${metric.label}:`, 20, 140 + (i * 10));
                 doc.text(metric.value, 70, 140 + (i * 10));
             });
-            
+
             doc.setFontSize(14);
             doc.setTextColor(30, 41, 59);
             doc.setFont('helvetica', 'bold');
             doc.text('Posture Status', 20, 220);
-            
+
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
             const statusText = postureStatus.innerText.split('\n');
             statusText.forEach((line, i) => {
                 doc.text(line, 20, 230 + (i * 7));
             });
-            
+
             doc.setFontSize(10);
             doc.setTextColor(100, 116, 139);
             doc.text('© PostureAI - AI-powered posture analysis', 105, 290, { align: 'center' });
-            
+
             doc.save(`PostureAI_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
         }
 
@@ -895,8 +1031,6 @@
                 loadReport('pie');
             }
         }
-        
-        showView('analyse');
     </script>
 </body>
 </html>
