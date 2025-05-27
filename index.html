@@ -543,8 +543,8 @@
             ];
             
             // Draw connections first
-            canvasCtx.strokeStyle = 'rgba(37, 186, 0, 0.8)';
-            canvasCtx.lineWidth = 10;
+            canvasCtx.strokeStyle = 'rgba(24, 209, 64, 1)';
+            canvasCtx.lineWidth = 9;
             for (const [start, end] of connections) {
                 if (landmarks[start] && landmarks[end]) {
                     canvasCtx.beginPath();
@@ -561,14 +561,14 @@
                     landmark.x * canvasElement.width, landmark.y * canvasElement.height, 8
                 );
                 gradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
-                gradient.addColorStop(1, 'rgba(37, 186, 0, 0.8)');
+                gradient.addColorStop(1, 'rgba(24, 209, 64, 1)');
                 
                 canvasCtx.beginPath();
                 canvasCtx.arc(landmark.x * canvasElement.width, landmark.y * canvasElement.height, 6, 0, 2 * Math.PI);
                 canvasCtx.fillStyle = gradient;
                 canvasCtx.fill();
-                canvasCtx.strokeStyle = 'rgba(99, 102, 241, 1)';
-                canvasCtx.lineWidth = 2;
+                canvasCtx.strokeStyle = 'rgba(18, 139, 44, 1)';
+                canvasCtx.lineWidth = 1.5;
                 canvasCtx.stroke();
             }
         }
