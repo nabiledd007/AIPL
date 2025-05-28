@@ -177,14 +177,13 @@
             top: 20px;
             left: 20px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0);
+            backdrop-filter: none;
             padding: 16px 20px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             z-index: 10;
             max-width: 500px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: none;
         }
 
         #reportView {
@@ -1148,6 +1147,7 @@
         <i class="fas fa-chart-line nav-item" onclick="showView('report')" id="reportTab"></i>
         <i class="fas fa-play nav-item" onclick="startAnalysis()" id="startAnalysisTab"></i>
         <i class="fas fa-save nav-item" onclick="saveData()" id="saveDataTab"></i>
+        <i class="fas fa-chevron-left nav-item" onclick="toggleRightPanel()" id="panelToggleTab"></i>
         <div class="nav-item color-picker-container">
             <input type="color" class="color-picker" id="colorPicker" value="#18D140">
             <div class="color-indicator" id="colorIndicator" style="background-color: #18D140;"></div>
@@ -1178,15 +1178,18 @@
         function toggleRightPanel() {
             const rightPanel = document.getElementById('rightPanel');
             const toggleBtn = document.getElementById('rightPanelToggle');
+            const panelToggleTab = document.getElementById('panelToggleTab');
             
             rightPanel.classList.toggle('hidden');
             
             if (rightPanel.classList.contains('hidden')) {
                 toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
                 toggleBtn.style.left = '-40px';
+                panelToggleTab.innerHTML = '<i class="fas fa-chevron-right"></i>';
             } else {
                 toggleBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
                 toggleBtn.style.left = '-40px';
+                panelToggleTab.innerHTML = '<i class="fas fa-chevron-left"></i>';
             }
         }
 
