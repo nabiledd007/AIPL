@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Posture Analysis Fujikura</title>
+    <title>Analyse Posturale Fujikura</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
@@ -174,7 +174,7 @@
 
         #analysis {
             position: fixed;
-            top: 20px;
+            top: 100px;
             left: 20px;
             right: 20px;
             background: rgba(255, 255, 255, 0);
@@ -341,404 +341,138 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        /* Right Panel Styles */
-        #rightPanel {
+        /* Risk Level Panel Styles */
+        #riskLevelPanel {
             position: fixed;
             top: 20px;
-            right: 20px;
-            width: 300px;
-            height: calc(100vh - 40px);
-            background: transparent;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            z-index: 20;
-            padding: 20px;
-            overflow-y: auto;
-            transform: translateX(0);
-            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            display: flex;
-            flex-direction: column;
-        }
-
-        #rightPanel.hidden {
-            transform: translateX(calc(100% + 20px));
-        }
-
-        #rightPanel.content-hidden .panel-section {
-            display: none;
-        }
-
-        #rightPanelToggle {
-            position: absolute;
-            left: -40px;
-            top: 20px;
-            width: 40px;
-            height: 40px;
-            background: var(--primary);
-            color: white;
-            border-radius: 8px 0 0 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: -5px 5px 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            z-index: 1;
-        }
-
-        #rightPanelToggle:hover {
-            background: var(--primary-dark);
-            transform: translateX(-2px);
-        }
-
-        #hideShowButton {
-            position: absolute;
-            left: -40px;
-            top: 70px;
-            width: 40px;
-            height: 40px;
-            background: var(--primary);
-            color: white;
-            border-radius: 8px 0 0 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: -5px 5px 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            z-index: 1;
-        }
-
-        #hideShowButton:hover {
-            background: var(--primary-dark);
-            transform: translateX(-2px);
-        }
-
-        .posture-indicator {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 10px;
-            background: rgba(241, 245, 249, 0.7);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .posture-indicator::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 5px;
-            height: 100%;
-            background: var(--primary);
-            transition: all 0.3s ease;
-        }
-
-        .posture-indicator:hover {
-            background: rgba(226, 232, 240, 0.7);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .posture-indicator:hover::after {
-            width: 8px;
-            background: var(--primary-dark);
-        }
-
-        .posture-indicator.active {
-            background: rgba(199, 210, 254, 0.3);
-        }
-
-        .posture-indicator.active::after {
-            width: 8px;
-            background: var(--primary-dark);
-        }
-
-        .posture-icon {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(99, 102, 241, 0.1);
-            border-radius: 8px;
-            color: var(--primary);
-            margin-right: 12px;
-            font-size: 18px;
-            transition: all 0.3s ease;
-        }
-
-        .posture-indicator:hover .posture-icon {
-            background: var(--primary);
-            color: white;
-        }
-
-        .posture-info {
-            flex: 1;
-        }
-
-        .posture-title {
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 2px;
-            font-size: 14px;
-        }
-
-        .posture-value {
-            font-size: 12px;
-            color: var(--gray);
-        }
-
-        .posture-status {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-left: 10px;
-        }
-
-        .posture-good {
-            background: #10b981;
-        }
-
-        .posture-warning {
-            background: #f59e0b;
-        }
-
-        .posture-bad {
-            background: #ef4444;
-        }
-
-        .posture-animation {
-            width: 100%;
-            height: 180px;
-            background: rgba(241, 245, 249, 0.5);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 15px;
             border-radius: 12px;
-            margin: 15px 0;
-            overflow: hidden;
-            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 30;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
 
-        .posture-skeleton {
-            position: absolute;
+        .risk-table {
             width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            animation: skeletonMove 4s ease-in-out infinite;
-        }
-
-        .skeleton-head {
-            width: 30px;
-            height: 30px;
-            background: white;
-            border-radius: 50%;
-            position: absolute;
-            top: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .skeleton-body {
-            width: 20px;
-            height: 60px;
-            background: white;
-            position: absolute;
-            top: 60px;
-            border-radius: 4px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .skeleton-arm {
-            width: 40px;
-            height: 10px;
-            background: white;
-            position: absolute;
-            border-radius: 4px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .skeleton-arm.left {
-            top: 70px;
-            left: 80px;
-            animation: armMoveLeft 2s ease-in-out infinite;
-        }
-
-        .skeleton-arm.right {
-            top: 70px;
-            right: 80px;
-            animation: armMoveRight 2s ease-in-out infinite;
-        }
-
-        .skeleton-leg {
-            width: 15px;
-            height: 40px;
-            background: white;
-            position: absolute;
-            border-radius: 4px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .skeleton-leg.left {
-            top: 120px;
-            left: 110px;
-        }
-
-        .skeleton-leg.right {
-            top: 120px;
-            right: 110px;
-        }
-
-        @keyframes skeletonMove {
-            0% { transform: translateX(0) rotate(0deg); }
-            50% { transform: translateX(5px) rotate(2deg); }
-            100% { transform: translateX(0) rotate(0deg); }
-        }
-
-        @keyframes armMoveLeft {
-            0% { transform: rotate(20deg); }
-            50% { transform: rotate(25deg); }
-            100% { transform: rotate(20deg); }
-        }
-
-        @keyframes armMoveRight {
-            0% { transform: rotate(-20deg); }
-            50% { transform: rotate(-25deg); }
-            100% { transform: rotate(-20deg); }
-        }
-
-        .posture-score {
-            text-align: center;
-            margin: 15px 0;
-        }
-
-        .score-circle {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: conic-gradient(var(--primary) 0%, var(--primary) 70%, #e2e8f0 70%, #e2e8f0 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-            position: relative;
-            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.2);
-            animation: pulse 2s infinite;
-        }
-
-        .score-inner {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 24px;
-            color: var(--primary);
-            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.5s ease;
-        }
-
-        .score-label {
+            border-collapse: collapse;
             margin-top: 10px;
-            font-size: 14px;
-            color: var(--gray);
         }
 
-        .panel-section {
-            margin-bottom: 20px;
+        .risk-table th,
+        .risk-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid rgba(226, 232, 240, 0.5);
         }
 
-        .panel-title {
-            font-size: 16px;
+        .risk-table th {
+            background-color: rgba(243, 244, 246, 0.7);
             font-weight: 600;
             color: var(--dark);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
         }
 
-        .panel-title i {
-            margin-right: 8px;
-            color: var(--primary);
-        }
-
-        .progress-container {
-            width: 100%;
-            background: #e2e8f0;
-            border-radius: 10px;
-            height: 8px;
-            margin-bottom: 15px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            border-radius: 10px;
-            background: var(--primary);
-            width: 70%;
-            transition: width 0.5s ease;
-            position: relative;
-        }
-
-        .progress-bar::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--gray);
-            margin-bottom: 5px;
-        }
-
-        .progress-name {
+        .risk-table td {
             font-weight: 500;
         }
 
-        .progress-value {
-            font-weight: 600;
+        .acceptable {
+            background-color: rgba(209, 250, 229, 0.7);
+            color: #065f46;
         }
 
-        .improvement-tip {
-            background: rgba(99, 102, 241, 0.1);
-            border-left: 3px solid var(--primary);
+        .faible {
+            background-color: rgba(254, 252, 191, 0.7);
+            color: #854d0e;
+        }
+
+        .eleve {
+            background-color: rgba(254, 215, 170, 0.7);
+            color: #c2410c;
+        }
+
+        .tres-eleve {
+            background-color: rgba(254, 226, 226, 0.7);
+            color: #991b1b;
+        }
+
+        /* Risk level animation */
+        .risk-pulse {
+            animation: riskPulse 2s infinite;
+        }
+
+        @keyframes riskPulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .risk-pulse-warning {
+            animation: riskPulseWarning 2s infinite;
+        }
+
+        @keyframes riskPulseWarning {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+
+        .risk-pulse-danger {
+            animation: riskPulseDanger 2s infinite;
+        }
+
+        @keyframes riskPulseDanger {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+
+        /* Language Menu */
+        #languageMenu {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 12px;
             padding: 10px;
-            border-radius: 0 8px 8px 0;
-            margin: 10px 0;
-            font-size: 13px;
-            color: var(--dark);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 110;
+        }
+
+        .language-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 5px;
         }
 
-        .improvement-tip i {
-            margin-right: 8px;
-            color: var(--primary);
+        .language-btn:hover {
+            transform: scale(1.1);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .language-btn img {
+            width: 24px;
+            height: 24px;
+            object-fit: cover;
+            border-radius: 50%;
         }
 
         @media (max-width: 768px) {
@@ -773,7 +507,7 @@
             }
 
             #analysis {
-                top: 10px;
+                top: 100px;
                 left: 10px;
                 right: 10px;
                 padding: 12px;
@@ -801,39 +535,20 @@
                 aspect-ratio: 4 / 3;
             }
 
-            #rightPanel {
-                width: 260px;
-                right: 10px;
+            #riskLevelPanel {
                 top: 10px;
-                height: calc(100vh - 20px);
+                padding: 10px;
+                max-width: 90%;
             }
 
-            #rightPanelToggle {
-                left: -35px;
-                width: 35px;
-                height: 35px;
+            .risk-table th,
+            .risk-table td {
+                padding: 8px;
+                font-size: 12px;
             }
 
-            #hideShowButton {
-                left: -35px;
-                top: 60px;
-                width: 35px;
-                height: 35px;
-            }
-
-            .posture-animation {
-                height: 150px;
-            }
-
-            .score-circle {
-                width: 80px;
-                height: 80px;
-            }
-
-            .score-inner {
-                width: 65px;
-                height: 65px;
-                font-size: 20px;
+            #languageMenu {
+                bottom: 70px;
             }
         }
 
@@ -870,59 +585,26 @@
                 padding: 6px;
             }
 
-            #rightPanel {
-                width: 85%;
-                right: 10px;
-                padding: 15px;
+            #riskLevelPanel {
+                top: 5px;
+                padding: 8px;
+                max-width: 95%;
             }
 
-            #rightPanelToggle {
-                left: -30px;
-                width: 30px;
-                height: 30px;
-                font-size: 14px;
+            .risk-table th,
+            .risk-table td {
+                padding: 6px;
+                font-size: 10px;
             }
 
-            #hideShowButton {
-                left: -30px;
-                top: 50px;
-                width: 30px;
-                height: 30px;
-                font-size: 14px;
-            }
-
-            .posture-indicator {
-                padding: 10px;
-            }
-
-            .posture-icon {
+            .language-btn {
                 width: 35px;
                 height: 35px;
-                font-size: 16px;
-                margin-right: 10px;
             }
 
-            .posture-title {
-                font-size: 13px;
-            }
-
-            .posture-value {
-                font-size: 11px;
-            }
-
-            .posture-animation {
-                height: 120px;
-            }
-
-            .score-circle {
-                width: 70px;
-                height: 70px;
-            }
-
-            .score-inner {
-                width: 55px;
-                height: 55px;
-                font-size: 18px;
+            .language-btn img {
+                width: 20px;
+                height: 20px;
             }
         }
     </style>
@@ -933,162 +615,86 @@
         <div>
             <i class="fa fa-diamond" aria-hidden="true"></i>
         </div>
-        <h1 class="title">Posture Analysis Fujikura</h1>
-        <p class="developer">Developed by Nabil EDDghoughi</p>
+        <h1 class="title">Analyse Posturale Fujikura</h1>
+        <p class="developer">Développé par Nabil EDDghoughi</p>
         <div class="loading-spinner"></div>
-        <button class="enter-button mt-4" onclick="enterApp()">Enter Application</button>
+        <button class="enter-button mt-4" onclick="enterApp()">Entrer dans l'application</button>
     </div>
 
     <!-- Main Application Content -->
     <video id="video" autoplay></video>
     <canvas id="canvas"></canvas>
 
-    <!-- Right Panel -->
-    <div id="rightPanel">
-        <div id="rightPanelToggle" onclick="toggleRightPanel()">
-            <i class="fas fa-chevron-left"></i>
+    <!-- Risk Level Panel -->
+    <div id="riskLevelPanel">
+        <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-800">Classification du Niveau de Risque</h3>
+            <button onclick="toggleRiskPanel()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <div id="hideShowButton" onclick="toggleContentVisibility()">
-            <i class="fas fa-chevron-left"></i>
-        </div>
-
-        <div class="panel-section">
-            <div class="panel-title">
-                <i class="fas fa-chart-line"></i> Posture Metrics
-            </div>
-            <div class="posture-animation">
-                <div class="posture-skeleton">
-                    <div class="skeleton-head"></div>
-                    <div class="skeleton-body"></div>
-                    <div class="skeleton-arm left"></div>
-                    <div class="skeleton-arm right"></div>
-                    <div class="skeleton-leg left"></div>
-                    <div class="skeleton-leg right"></div>
-                </div>
-            </div>
-            <div class="posture-score">
-                <div class="score-circle">
-                    <div class="score-inner">82</div>
-                </div>
-                <div class="score-label">Posture Score</div>
-            </div>
-        </div>
-
-        <div class="panel-section">
-            <div class="panel-title">
-                <i class="fas fa-ruler-combined"></i> Detailed Analysis
-            </div>
-            
-            <div class="posture-indicator active">
-                <div class="posture-icon">
-                    <i class="fas fa-head-side"></i>
-                </div>
-                <div class="posture-info">
-                    <div class="posture-title">Head Position</div>
-                    <div class="posture-value">Forward tilt: 12°</div>
-                </div>
-                <div class="posture-status posture-warning"></div>
-            </div>
-            
-            <div class="posture-indicator">
-                <div class="posture-icon">
-                    <i class="fas fa-arrows-alt-h"></i>
-                </div>
-                <div class="posture-info">
-                    <div class="posture-title">Shoulder Alignment</div>
-                    <div class="posture-value">Difference: 1.2cm</div>
-                </div>
-                <div class="posture-status posture-good"></div>
-            </div>
-            
-            <div class="posture-indicator">
-                <div class="posture-icon">
-                    <i class="fas fa-spine"></i>
-                </div>
-                <div class="posture-info">
-                    <div class="posture-title">Spine Curvature</div>
-                    <div class="posture-value">Angle: 8°</div>
-                </div>
-                <div class="posture-status posture-good"></div>
-            </div>
-            
-            <div class="posture-indicator">
-                <div class="posture-icon">
-                    <i class="fas fa-hands"></i>
-                </div>
-                <div class="posture-info">
-                    <div class="posture-title">Arm Position</div>
-                    <div class="posture-value">Left: 25°, Right: 28°</div>
-                </div>
-                <div class="posture-status posture-warning"></div>
-            </div>
-        </div>
-
-        <div class="panel-section">
-            <div class="panel-title">
-                <i class="fas fa-tachometer-alt"></i> Progress Tracking
-            </div>
-            
-            <div class="progress-label">
-                <span class="progress-name">Head Position</span>
-                <span class="progress-value">65%</span>
-            </div>
-            <div class="progress-container">
-                <div class="progress-bar" style="width: 65%;"></div>
-            </div>
-            
-            <div class="progress-label">
-                <span class="progress-name">Shoulder Alignment</span>
-                <span class="progress-value">82%</span>
-            </div>
-            <div class="progress-container">
-                <div class="progress-bar" style="width: 82%;"></div>
-            </div>
-            
-            <div class="progress-label">
-                <span class="progress-name">Spine Health</span>
-                <span class="progress-value">78%</span>
-            </div>
-            <div class="progress-container">
-                <div class="progress-bar" style="width: 78%;"></div>
-            </div>
-            
-            <div class="improvement-tip">
-                <i class="fas fa-lightbulb"></i> Try chin tucks to improve your head position
-            </div>
-        </div>
+        <table class="risk-table">
+            <thead>
+                <tr>
+                    <th>Score</th>
+                    <th>Niveau de Risque</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="acceptable"><span class="emoji">😊</span> ≤2</td>
+                    <td class="acceptable">Acceptable</td>
+                </tr>
+                <tr>
+                    <td class="faible"><span class="emoji">😐</span> 3 ou 4</td>
+                    <td class="faible">Faible</td>
+                </tr>
+                <tr>
+                    <td class="eleve"><span class="emoji">😟</span> 5 ou 6</td>
+                    <td class="eleve">Élevé</td>
+                </tr>
+                <tr>
+                    <td class="tres-eleve"><span class="emoji">😨</span> ≥7</td>
+                    <td class="tres-eleve">Très élevé</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="text-sm text-gray-600 mt-2" id="riskStatus">En attente d'évaluation des risques...</p>
     </div>
 
     <div id="analysis" class="hidden">
         <div class="flex items-center mb-2">
-            <h3 class="text-lg font-semibold text-gray-800">Posture Analysis</h3>
+            <h3 class="text-lg font-semibold text-gray-800">Analyse Posturale</h3>
             <span id="statusIndicator" class="status-indicator status-warning ml-auto"></span>
         </div>
-        <p class="text-gray-600 text-sm" id="postureStatus">Waiting for analysis...</p>
+        <p class="text-gray-600 text-sm" id="postureStatus">En attente d'analyse...</p>
     </div>
 
     <div id="reportView" class="hidden">
         <div id="report">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold text-gray-800">Posture Report</h2>
+                <h2 class="text-2xl font-bold text-gray-800">Rapport Postural</h2>
                 <button onclick="exportToPDF()" class="btn-danger">
-                    <i class="fas fa-file-pdf mr-2"></i>Export PDF
+                    <i class="fas fa-file-pdf mr-2"></i>Exporter PDF
                 </button>
             </div>
 
             <div id="chartButtonsContainer">
                 <div id="chartButtons" class="flex gap-2">
                     <button onclick="loadReport('pie')" class="chart-tab" id="pieTab">
-                        <i class="fas fa-chart-pie mr-2"></i>Pie
+                        <i class="fas fa-chart-pie mr-2"></i>Camembert
                     </button>
                     <button onclick="loadReport('bar')" class="chart-tab" id="barTab">
-                        <i class="fas fa-chart-bar mr-2"></i>Bar
+                        <i class="fas fa-chart-bar mr-2"></i>Barres
                     </button>
                     <button onclick="loadReport('line')" class="chart-tab active" id="lineTab">
-                        <i class="fas fa-chart-line mr-2"></i>Line
+                        <i class="fas fa-chart-line mr-2"></i>Ligne
                     </button>
                     <button onclick="loadReport('scatter')" class="chart-tab" id="scatterTab">
-                        <i class="fas fa-chart-scatter mr-2"></i>Scatter
+                        <i class="fas fa-chart-scatter mr-2"></i>Dispersion
+                    </button>
+                    <button onclick="loadReport('risk')" class="chart-tab" id="riskTab">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Risque
                     </button>
                 </div>
             </div>
@@ -1098,43 +704,39 @@
             <div id="nb">
                 <div class="metrics-grid grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-white p-4 rounded-xl shadow-sm">
-                        <h3 class="font-semibold text-gray-800 mb-3">Latest Metrics</h3>
+                        <h3 class="font-semibold text-gray-800 mb-3">Dernières Métriques</h3>
                         <div class="space-y-2">
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Forward Head:</span>
+                                <span class="text-gray-600">Tête vers l'avant:</span>
                                 <span class="font-medium" id="latestForwardHead">0.00</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Shoulder Alignment:</span>
+                                <span class="text-gray-600">Alignement des épaules:</span>
                                 <span class="font-medium" id="latestShoulderAlign">0.00</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Back Curvature:</span>
+                                <span class="text-gray-600">Courbure du dos:</span>
                                 <span class="font-medium" id="latestBackCurvature">0.00</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Left Arm Angle:</span>
+                                <span class="text-gray-600">Angle bras gauche:</span>
                                 <span class="font-medium" id="latestLeftArmAngle">0.00</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Right Arm Angle:</span>
+                                <span class="text-gray-600">Angle bras droit:</span>
                                 <span class="font-medium" id="latestRightArmAngle">0.00</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Left Leg Angle:</span>
-                                <span class="font-medium" id="latestLeftLegAngle">0.00</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Right Leg Angle:</span>
-                                <span class="font-medium" id="latestRightLegAngle">0.00</span>
+                                <span class="text-gray-600">Niveau de risque:</span>
+                                <span class="font-medium" id="latestRiskLevel">N/A</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="bg-white p-4 rounded-xl shadow-sm">
-                        <h3 class="font-semibold text-gray-800 mb-3">Recommendations</h3>
+                        <h3 class="font-semibold text-gray-800 mb-3">Recommandations</h3>
                         <ul class="text-sm text-gray-600 space-y-2" id="recommendations">
-                            <li><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Start analysis to get personalized recommendations</li>
+                            <li><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Commencez l'analyse pour obtenir des recommandations personnalisées</li>
                         </ul>
                     </div>
                 </div>
@@ -1147,10 +749,26 @@
         <i class="fas fa-chart-line nav-item" onclick="showView('report')" id="reportTab"></i>
         <i class="fas fa-play nav-item" onclick="startAnalysis()" id="startAnalysisTab"></i>
         <i class="fas fa-save nav-item" onclick="saveData()" id="saveDataTab"></i>
-        <i class="fas fa-chevron-left nav-item" onclick="toggleRightPanel()" id="panelToggleTab"></i>
+        <i class="fas fa-language nav-item" onclick="toggleLanguageMenu()" id="languageTab"></i>
+        <i class="fas fa-chart-bar nav-item" onclick="toggleRiskPanel()" id="riskTab"></i>
         <div class="nav-item color-picker-container">
             <input type="color" class="color-picker" id="colorPicker" value="#18D140">
             <div class="color-indicator" id="colorIndicator" style="background-color: #18D140;"></div>
+        </div>
+    </div>
+
+    <!-- Language Menu -->
+    <div id="languageMenu">
+        <div class="flex gap-2">
+            <div class="language-btn active" onclick="changeLanguage('fr')">
+                <img src="https://flagcdn.com/w20/fr.png" alt="Français">
+            </div>
+            <div class="language-btn" onclick="changeLanguage('en')">
+                <img src="https://flagcdn.com/w20/gb.png" alt="English">
+            </div>
+            <div class="language-btn" onclick="changeLanguage('es')">
+                <img src="https://flagcdn.com/w20/es.png" alt="Español">
+            </div>
         </div>
     </div>
 
@@ -1161,6 +779,176 @@
     <script>
         const { jsPDF } = window.jspdf;
 
+        // Translation dictionary
+        const translations = {
+            'fr': {
+                'appTitle': 'Analyse Posturale Fujikura',
+                'developer': 'Développé par Nabil EDDghoughi',
+                'enterApp': 'Entrer dans l\'application',
+                'postureAnalysis': 'Analyse Posturale',
+                'waitingAnalysis': 'En attente d\'analyse...',
+                'riskClassification': 'Classification du Niveau de Risque',
+                'riskStatus': 'En attente d\'évaluation des risques...',
+                'postureIndicators': 'Indicateurs Posturaux',
+                'forwardTilt': 'Inclinaison vers l\'avant',
+                'shoulderAlignment': 'Alignement des épaules',
+                'backCurvature': 'Courbure du dos',
+                'armAngles': 'Angles des bras',
+                'postureScore': 'Score Postural',
+                'riskLevel': 'Niveau de risque',
+                'progress': 'Progrès',
+                'improvementTip': 'Essayez des exercices d\'étirement pour améliorer votre posture.',
+                'reportTitle': 'Rapport Postural',
+                'exportPDF': 'Exporter PDF',
+                'latestMetrics': 'Dernières Métriques',
+                'forwardHead': 'Tête vers l\'avant',
+                'shoulderAlign': 'Alignement des épaules',
+                'backCurve': 'Courbure du dos',
+                'leftArm': 'Angle bras gauche',
+                'rightArm': 'Angle bras droit',
+                'leftLeg': 'Angle jambe gauche',
+                'rightLeg': 'Angle jambe droite',
+                'recommendations': 'Recommandations',
+                'startAnalysis': 'Commencez l\'analyse pour obtenir des recommandations personnalisées',
+                'goodPosture': 'Bonne posture détectée! Continuez comme ça!',
+                'issuesDetected': 'Problèmes de posture détectés:',
+                'forwardHeadTip': '• Posture de la tête vers l\'avant (essayez des exercices de menton)',
+                'shoulderTip': '• Épaules inégales (essayez des rotations d\'épaules)',
+                'backTip': '• Courbure excessive du dos (essayez des exercices de renforcement du troncc)',
+                'armTip': '• Angles des bras trop pliés (essayez des étirements des bras)',
+                'legTip': '• Angles des jambes mal alignés (essayez des exercices d\'alignement des jambes)',
+                'maintainPosture': '• Bonne posture! Maintenez cette position.'
+            },
+            'en': {
+                'appTitle': 'Posture Analysis Fujikura',
+                'developer': 'Developed by Nabil EDDghoughi',
+                'enterApp': 'Enter Application',
+                'postureAnalysis': 'Posture Analysis',
+                'waitingAnalysis': 'Waiting for analysis...',
+                'riskClassification': 'Risk Level Classification',
+                'riskStatus': 'Waiting for risk assessment...',
+                'postureIndicators': 'Posture Indicators',
+                'forwardTilt': 'Forward Tilt',
+                'shoulderAlignment': 'Shoulder Alignment',
+                'backCurvature': 'Back Curvature',
+                'armAngles': 'Arm Angles',
+                'postureScore': 'Posture Score',
+                'riskLevel': 'Risk Level',
+                'progress': 'Progress',
+                'improvementTip': 'Try stretching exercises to improve posture.',
+                'reportTitle': 'Posture Report',
+                'exportPDF': 'Export PDF',
+                'latestMetrics': 'Latest Metrics',
+                'forwardHead': 'Forward Head',
+                'shoulderAlign': 'Shoulder Alignment',
+                'backCurve': 'Back Curvature',
+                'leftArm': 'Left Arm Angle',
+                'rightArm': 'Right Arm Angle',
+                'leftLeg': 'Left Leg Angle',
+                'rightLeg': 'Right Leg Angle',
+                'recommendations': 'Recommendations',
+                'startAnalysis': 'Start analysis to get personalized recommendations',
+                'goodPosture': 'Good posture detected! Keep it up!',
+                'issuesDetected': 'Posture issues detected:',
+                'forwardHeadTip': '• Forward head posture (try chin tucks)',
+                'shoulderTip': '• Uneven shoulders (try shoulder rolls)',
+                'backTip': '• Excessive back curvature (try core strengthening exercises)',
+                'armTip': '• Arm angles too bent (try arm stretches)',
+                'legTip': '• Leg angles misaligned (try leg alignment exercises)',
+                'maintainPosture': '• Good posture! Maintain this position.'
+            },
+            'es': {
+                'appTitle': 'Análisis Postural Fujikura',
+                'developer': 'Desarrollado por Nabil EDDghoughi',
+                'enterApp': 'Entrar a la Aplicación',
+                'postureAnalysis': 'Análisis Postural',
+                'waitingAnalysis': 'Esperando análisis...',
+                'riskClassification': 'Clasificación de Nivel de Riesgo',
+                'riskStatus': 'Esperando evaluación de riesgo...',
+                'postureIndicators': 'Indicadores Posturales',
+                'forwardTilt': 'Inclinación Hacia Adelante',
+                'shoulderAlignment': 'Alineación de Hombros',
+                'backCurvature': 'Curvatura de la Espalda',
+                'armAngles': 'Ángulos de Brazos',
+                'postureScore': 'Puntuación Postural',
+                'riskLevel': 'Nivel de riesgo',
+                'progress': 'Progreso',
+                'improvementTip': 'Pruebe ejercicios de estiramiento para mejorar la postura.',
+                'reportTitle': 'Informe Postural',
+                'exportPDF': 'Exportar PDF',
+                'latestMetrics': 'Últimas Métricas',
+                'forwardHead': 'Cabeza Adelantada',
+                'shoulderAlign': 'Alineación de Hombros',
+                'backCurve': 'Curvatura de la Espalda',
+                'leftArm': 'Ángulo Brazo Izquierdo',
+                'rightArm': 'Ángulo Brazo Derecho',
+                'leftLeg': 'Ángulo Pierna Izquierda',
+                'rightLeg': 'Ángulo Pierna Derecha',
+                'recommendations': 'Recomendaciones',
+                'startAnalysis': 'Comience el análisis para obtener recomendaciones personalizadas',
+                'goodPosture': '¡Buena postura detectada! ¡Sigue así!',
+                'issuesDetected': 'Problemas de postura detectados:',
+                'forwardHeadTip': '• Postura de cabeza adelantada (pruebe ejercicios de mentón)',
+                'shoulderTip': '• Hombros desiguales (pruebe rotaciones de hombros)',
+                'backTip': '• Curvatura excesiva de la espalda (pruebe ejercicios de fortalecimiento del tronco)',
+                'armTip': '• Ángulos de brazos muy doblados (pruebe estiramientos de brazos)',
+                'legTip': '• Ángulos de piernas desalineados (pruebe ejercicios de alineación de piernas)',
+                'maintainPosture': '• ¡Buena postura! Mantenga esta posición.'
+            }
+        };
+
+        let currentLanguage = 'fr';
+        let riskPanelVisible = true;
+
+        // Change language function
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            updateLanguage();
+            toggleLanguageMenu();
+        }
+
+        // Toggle language menu
+        function toggleLanguageMenu() {
+            const languageMenu = document.getElementById('languageMenu');
+            languageMenu.style.display = languageMenu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Toggle risk panel visibility
+        function toggleRiskPanel() {
+            riskPanelVisible = !riskPanelVisible;
+            document.getElementById('riskLevelPanel').style.display = riskPanelVisible ? 'block' : 'none';
+        }
+
+        // Update all text elements with translations
+        function updateLanguage() {
+            const t = translations[currentLanguage];
+            
+            // Update splash screen
+            document.querySelector('.title').textContent = t.appTitle;
+            document.querySelector('.developer').textContent = t.developer;
+            document.querySelector('.enter-button').textContent = t.enterApp;
+            
+            // Update analysis panel
+            document.querySelector('#analysis h3').textContent = t.postureAnalysis;
+            document.getElementById('postureStatus').textContent = t.waitingAnalysis;
+            
+            // Update risk level panel
+            document.querySelector('#riskLevelPanel h3').textContent = t.riskClassification;
+            document.getElementById('riskStatus').textContent = t.riskStatus;
+            
+            // Update report view
+            document.querySelector('#report h2').textContent = t.reportTitle;
+            document.querySelector('.btn-danger').innerHTML = `<i class="fas fa-file-pdf mr-2"></i>${t.exportPDF}`;
+            document.querySelectorAll('.font-semibold')[0].textContent = t.latestMetrics;
+            document.querySelectorAll('.font-semibold')[1].textContent = t.recommendations;
+            document.querySelectorAll('.text-gray-600')[0].textContent = t.forwardHead;
+            document.querySelectorAll('.text-gray-600')[1].textContent = t.shoulderAlign;
+            document.querySelectorAll('.text-gray-600')[2].textContent = t.backCurve;
+            document.querySelectorAll('.text-gray-600')[3].textContent = t.leftArm;
+            document.querySelectorAll('.text-gray-600')[4].textContent = t.rightArm;
+            document.getElementById('recommendations').innerHTML = `<li><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>${t.startAnalysis}</li>`;
+        }
+
         // Splash Screen Logic
         function enterApp() {
             const splashScreen = document.getElementById('splashScreen');
@@ -1168,87 +956,13 @@
             setTimeout(() => {
                 splashScreen.style.display = 'none';
                 showView('analyse');
+                // Show risk level panel when app starts
+                document.getElementById('riskLevelPanel').classList.add('active');
             }, 500);
         }
 
         // Auto-hide splash screen after 3 seconds
         setTimeout(enterApp, 3000);
-
-        // Right Panel Toggle (Slide In/Out)
-        function toggleRightPanel() {
-            const rightPanel = document.getElementById('rightPanel');
-            const toggleBtn = document.getElementById('rightPanelToggle');
-            const panelToggleTab = document.getElementById('panelToggleTab');
-            
-            rightPanel.classList.toggle('hidden');
-            
-            if (rightPanel.classList.contains('hidden')) {
-                toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-                toggleBtn.style.left = '-40px';
-                panelToggleTab.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            } else {
-                toggleBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-                toggleBtn.style.left = '-40px';
-                panelToggleTab.innerHTML = '<i class="fas fa-chevron-left"></i>';
-            }
-        }
-
-        // Toggle Content Visibility (Hide/Show Panel Content)
-        function toggleContentVisibility() {
-            const rightPanel = document.getElementById('rightPanel');
-            const hideShowBtn = document.getElementById('hideShowButton');
-            
-            rightPanel.classList.toggle('content-hidden');
-            
-            if (rightPanel.classList.contains('content-hidden')) {
-                hideShowBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            } else {
-                hideShowBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-            }
-        }
-
-        // Animate Posture Score
-        function animatePostureScore() {
-            const scoreElement = document.querySelector('.score-inner');
-            const scoreCircle = document.querySelector('.score-circle');
-            if (scoreElement && scoreCircle) {
-                let currentScore = parseInt(scoreElement.textContent) || 82;
-                setInterval(() => {
-                    const newScore = Math.floor(70 + Math.random() * 30);
-                    const difference = newScore - currentScore;
-                    const steps = 20;
-                    const stepValue = difference / steps;
-                    let stepCount = 0;
-
-                    const updateScore = () => {
-                        if (stepCount < steps) {
-                            currentScore += stepValue;
-                            scoreElement.textContent = Math.round(currentScore);
-                            const percentage = Math.round(currentScore);
-                            scoreCircle.style.background = `conic-gradient(var(--primary) 0%, var(--primary) ${percentage}%, #e2e8f0 ${percentage}%, #e2e8f0 100%)`;
-                            stepCount++;
-                            requestAnimationFrame(updateScore);
-                        }
-                    };
-                    updateScore();
-                }, 3000);
-            }
-        }
-
-        // Start posture score animation when analysis begins
-        function startAnalysis() {
-            camera.start();
-            analysisDiv.classList.remove('hidden');
-            postureStatus.textContent = 'Analyzing your posture...';
-            statusIndicator.className = 'status-indicator status-good';
-            canvasElement.width = videoElement.videoWidth;
-            canvasElement.height = videoElement.videoHeight;
-            
-            // Update right panel with simulated data
-            updateRightPanel();
-            // Start posture score animation
-            animatePostureScore();
-        }
 
         // Main Application Logic
         const videoElement = document.getElementById('video');
@@ -1260,13 +974,15 @@
         const reportView = document.getElementById('reportView');
         const colorPicker = document.getElementById('colorPicker');
         const colorIndicator = document.getElementById('colorIndicator');
+        const riskLevelPanel = document.getElementById('riskLevelPanel');
+        const riskStatus = document.getElementById('riskStatus');
         let latestPostureData = {};
         let postureChart = null;
         let latestChartData = null;
         let currentFacingMode = 'environment';
         let currentColor = '#18D140';
 
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbweXaq-kVNeqy-GrLfqKEQ-eerXfKoErFVpV_MgYeIVJ5y7_r50yF82S1sgw5jJsl7X/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyahIJiyLF8QGGxHuTOxi6dbHl-KH_Jcm_2-NFb3gkfYAcuMjFNeekOLozvhr-7oAhY/exec';
 
         // Initialize MediaPipe Pose
         const pose = new Pose({
@@ -1296,69 +1012,6 @@
             currentColor = e.target.value;
             colorIndicator.style.backgroundColor = currentColor;
         });
-
-        function updateRightPanel() {
-            // Simulate updating posture indicators with random data
-            const indicators = document.querySelectorAll('.posture-indicator');
-            indicators.forEach(indicator => {
-                const statusElement = indicator.querySelector('.posture-status');
-                const valueElement = indicator.querySelector('.posture-value');
-                
-                // Random status (good, warning, bad)
-                const statuses = ['posture-good', 'posture-warning', 'posture-bad'];
-                const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-                
-                // Remove all status classes and add the random one
-                statusElement.classList.remove('posture-good', 'posture-warning', 'posture-bad');
-                statusElement.classList.add(randomStatus);
-                
-                // Update values with random data
-                if (valueElement) {
-                    if (valueElement.textContent.includes('Forward tilt')) {
-                        valueElement.textContent = `Forward tilt: ${(Math.random() * 15).toFixed(1)}°`;
-                    } else if (valueElement.textContent.includes('Difference')) {
-                        valueElement.textContent = `Difference: ${(Math.random() * 2).toFixed(1)}cm`;
-                    } else if (valueElement.textContent.includes('Angle')) {
-                        valueElement.textContent = `Angle: ${(Math.random() * 10).toFixed(1)}°`;
-                    } else if (valueElement.textContent.includes('Left') && valueElement.textContent.includes('Right')) {
-                        valueElement.textContent = `Left: ${(20 + Math.random() * 15).toFixed(1)}°, Right: ${(20 + Math.random() * 15).toFixed(1)}°`;
-                    }
-                }
-            });
-            
-            // Update progress bars with random data
-            const progressBars = document.querySelectorAll('.progress-bar');
-            progressBars.forEach(bar => {
-                const randomWidth = Math.floor(50 + Math.random() * 50);
-                bar.style.width = `${randomWidth}%`;
-                
-                // Update the corresponding value text
-                const progressValue = bar.closest('.progress-container').previousElementSibling.querySelector('.progress-value');
-                if (progressValue) {
-                    progressValue.textContent = `${randomWidth}%`;
-                }
-            });
-        }
-
-        async function switchCamera() {
-            try {
-                await camera.stop();
-                currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-                camera = new Camera(videoElement, {
-                    onFrame: async () => {
-                        await pose.send({ image: videoElement });
-                    },
-                    width: 640,
-                    height: 480,
-                    facingMode: currentFacingMode
-                });
-                await camera.start();
-                postureStatus.textContent = `Analyzing posture (${currentFacingMode === 'environment' ? 'Back' : 'Front'} camera)...`;
-                statusIndicator.className = 'status-indicator status-good';
-            } catch (error) {
-                alert('Error switching camera: ' + error.message);
-            }
-        }
 
         function onResults(results) {
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
@@ -1442,37 +1095,47 @@
             const shoulderMidpointY = (leftShoulder.y + rightShoulder.y) / 2;
             const hipMidpointY = (leftHip.y + rightHip.y) / 2;
 
-            const forwardHeadDistance = Math.abs(nose.x - shoulderMidpointX);
-            const shoulderAlignment = Math.abs(leftShoulder.y - rightShoulder.y);
-            const backCurvature = Math.abs(shoulderMidpointY - hipMidpointY);
+            const forwardHeadDistance = Math.abs(nose.x - shoulderMidpointX) * 100; // Normalized to a scale
+            const shoulderAlignment = Math.abs(leftShoulder.y - rightShoulder.y) * 100;
+            const backCurvature = Math.abs(shoulderMidpointY - hipMidpointY) * 100;
             const leftArmAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
             const rightArmAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
             const leftLegAngle = calculateAngle(leftHip, leftKnee, leftAnkle);
             const rightLegAngle = calculateAngle(rightHip, rightKnee, rightAnkle);
 
-            let status = 'Good posture detected! Keep it up!';
+            // Calculate overall posture score (0-10 range for simplicity)
+            let postureScore = 0;
+            postureScore += (forwardHeadDistance > 10) ? 2 : 0;
+            postureScore += (shoulderAlignment > 5) ? 2 : 0;
+            postureScore += (backCurvature > 20) ? 2 : 0;
+            postureScore += (leftArmAngle < 150 || rightArmAngle < 150) ? 2 : 0;
+            postureScore += (leftLegAngle < 160 || rightLegAngle < 160) ? 2 : 0;
+            postureScore = Math.min(10, postureScore); // Cap at 10
+
+            const t = translations[currentLanguage];
+            let status = t.goodPosture;
             let statusClass = 'status-good';
             let recommendations = [];
 
-            if (forwardHeadDistance > 0.1) {
-                recommendations.push('• Forward head posture (try chin tucks)');
+            if (forwardHeadDistance > 10) {
+                recommendations.push(t.forwardHeadTip);
             }
-            if (shoulderAlignment > 0.05) {
-                recommendations.push('• Uneven shoulders (try shoulder rolls)');
+            if (shoulderAlignment > 5) {
+                recommendations.push(t.shoulderTip);
             }
-            if (backCurvature > 0.2) {
-                recommendations.push('• Excessive back curvature (try core strengthening exercises)');
+            if (backCurvature > 20) {
+                recommendations.push(t.backTip);
             }
             if (leftArmAngle < 150 || rightArmAngle < 150) {
-                recommendations.push('• Arm angles too bent (try arm stretches)');
+                recommendations.push(t.armTip);
             }
             if (leftLegAngle < 160 || rightLegAngle < 160) {
-                recommendations.push('• Leg angles misaligned (try leg alignment exercises)');
+                recommendations.push(t.legTip);
             }
 
             if (recommendations.length > 0) {
                 statusClass = 'status-warning';
-                status = 'Posture issues detected:\n' + recommendations.join('\n');
+                status = t.issuesDetected + '\n' + recommendations.join('\n');
             }
 
             postureStatus.innerHTML = status.split('\n').map(line =>
@@ -1483,15 +1146,13 @@
             const recommendationsList = document.getElementById('recommendations');
             recommendationsList.innerHTML = recommendations.length > 0
                 ? recommendations.map(rec => `<li><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>${rec.slice(2)}</li>`).join('')
-                : '<li><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Good posture! Maintain this position.</li>';
+                : `<li><i class="fas fa-lightbulb text-yellow-500 mr-2"></i>${t.maintainPosture.slice(2)}</li>`;
 
             document.getElementById('latestForwardHead').textContent = forwardHeadDistance.toFixed(4);
             document.getElementById('latestShoulderAlign').textContent = shoulderAlignment.toFixed(4);
             document.getElementById('latestBackCurvature').textContent = backCurvature.toFixed(4);
             document.getElementById('latestLeftArmAngle').textContent = leftArmAngle.toFixed(2);
             document.getElementById('latestRightArmAngle').textContent = rightArmAngle.toFixed(2);
-            document.getElementById('latestLeftLegAngle').textContent = leftLegAngle.toFixed(2);
-            document.getElementById('latestRightLegAngle').textContent = rightLegAngle.toFixed(2);
 
             latestPostureData = {
                 timestamp: new Date().toISOString(),
@@ -1502,8 +1163,62 @@
                 leftArmAngle,
                 rightArmAngle,
                 leftLegAngle,
-                rightLegAngle
+                rightLegAngle,
+                postureScore: Math.round(postureScore * 10), // Scale to 0-100 for display
+                riskLevel: calculateRiskLevel(postureScore * 10)
             };
+
+            document.getElementById('latestRiskLevel').textContent = latestPostureData.riskLevel;
+            updateRiskLevel(Math.round(postureScore * 10));
+        }
+
+        function calculateRiskLevel(score) {
+            if (score <= 20) return translations[currentLanguage].riskClassification.includes('Acceptable') ? 'Acceptable' : 'Low';
+            if (score <= 40) return translations[currentLanguage].riskClassification.includes('Faible') ? 'Faible' : 'Medium';
+            if (score <= 60) return translations[currentLanguage].riskClassification.includes('Élevé') ? 'Élevé' : 'High';
+            return translations[currentLanguage].riskClassification.includes('Très élevé') ? 'Très élevé' : 'Very High';
+        }
+
+        function updateRiskLevel(score) {
+            const riskStatusElement = document.getElementById('riskStatus');
+            let riskLevel = '';
+            let riskClass = '';
+            let pulseClass = '';
+            
+            if (score <= 20) {
+                riskLevel = currentLanguage === 'fr' ? 'Acceptable' : 
+                          (currentLanguage === 'es' ? 'Aceptable' : 'Acceptable');
+                riskClass = 'acceptable';
+                pulseClass = 'risk-pulse';
+            } else if (score <= 40) {
+                riskLevel = currentLanguage === 'fr' ? 'Faible' : 
+                          (currentLanguage === 'es' ? 'Bajo' : 'Low');
+                riskClass = 'faible';
+                pulseClass = 'risk-pulse-warning';
+            } else if (score <= 60) {
+                riskLevel = currentLanguage === 'fr' ? 'Élevé' : 
+                          (currentLanguage === 'es' ? 'Alto' : 'High');
+                riskClass = 'eleve';
+                pulseClass = 'risk-pulse-warning';
+            } else {
+                riskLevel = currentLanguage === 'fr' ? 'Très élevé' : 
+                          (currentLanguage === 'es' ? 'Muy alto' : 'Very high');
+                riskClass = 'tres-eleve';
+                pulseClass = 'risk-pulse-danger';
+            }
+            
+            // Update risk level panel
+            riskStatus.textContent = `${translations[currentLanguage].riskStatus.split(':')[0]}: ${riskLevel} (${translations[currentLanguage].postureScore.split(':')[0]}: ${score})`;
+            
+            // Remove all risk classes and add the current one
+            riskLevelPanel.className = riskClass;
+            riskLevelPanel.classList.add('active', pulseClass);
+            
+            // Update the table cells
+            const cells = document.querySelectorAll('.risk-table td');
+            cells.forEach(cell => {
+                cell.className = riskClass;
+            });
         }
 
         async function saveData() {
@@ -1517,9 +1232,12 @@
                 });
                 const result = await response.json();
                 if (result.status === 'success') {
+                    alert('Data saved successfully');
                 } else {
+                    alert('Error saving data');
                 }
             } catch (error) {
+                alert('Error saving data: ' + error.message);
             }
         }
 
@@ -1528,14 +1246,24 @@
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 const data = await response.json();
                 if (data.status === 'error') {
+                    alert('Error loading data');
                     return;
                 }
+                
                 const labels = data.map(row => new Date(row.timestamp).toLocaleString());
                 const forwardHeadData = data.map(row => row.forwardHeadDistance);
                 const shoulderAlignmentData = data.map(row => row.shoulderAlignment);
-                latestChartData = { labels, forwardHeadData, shoulderAlignmentData };
+                const riskLevels = data.map(row => {
+                    const score = row.postureScore;
+                    if (score <= 20) return 0;
+                    if (score <= 40) return 1;
+                    if (score <= 60) return 2;
+                    return 3;
+                });
+                
+                latestChartData = { labels, forwardHeadData, shoulderAlignmentData, riskLevels };
 
-                ['pieTab', 'barTab', 'lineTab', 'scatterTab'].forEach(tab => {
+                ['pieTab', 'barTab', 'lineTab', 'scatterTab', 'riskTab'].forEach(tab => {
                     document.getElementById(tab).classList.remove('active');
                 });
                 document.getElementById(`${chartType}Tab`).classList.add('active');
@@ -1547,15 +1275,15 @@
                     postureChart.destroy();
                 }
 
-                const config = {
+                let config = {
                     data: {
-                        labels: chartType === 'pie' ? ['Forward Head', 'Shoulder Alignment'] : labels,
+                        labels: chartType === 'pie' ? [translations[currentLanguage].forwardHead.split(':')[0], translations[currentLanguage].shoulderAlign.split(':')[0]] : labels,
                         datasets: []
                     },
                     options: {
                         responsive: true,
                         plugins: {
-                            title: { display: true, text: 'Posture Trends', font: { size: 18 } }
+                            title: { display: true, text: translations[currentLanguage].postureAnalysis, font: { size: 18 } }
                         }
                     }
                 };
@@ -1568,10 +1296,46 @@
                         backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(236, 72, 153, 0.8)']
                     }];
                     config.options.plugins.legend = { position: 'top' };
-                } else {
+                } 
+                else if (chartType === 'risk') {
+                    config.type = 'bar';
+                    config.data.labels = labels;
+                    config.data.datasets = [{
+                        label: translations[currentLanguage].riskLevel,
+                        data: riskLevels,
+                        backgroundColor: riskLevels.map(level => {
+                            if (level === 0) return 'rgba(16, 185, 129, 0.7)';
+                            if (level === 1) return 'rgba(245, 158, 11, 0.7)';
+                            if (level === 2) return 'rgba(239, 68, 68, 0.7)';
+                            return 'rgba(220, 38, 38, 0.7)';
+                        }),
+                        borderColor: riskLevels.map(level => {
+                            if (level === 0) return 'rgba(16, 185, 129, 1)';
+                            if (level === 1) return 'rgba(245, 158, 11, 1)';
+                            if (level === 2) return 'rgba(239, 68, 68, 1)';
+                            return 'rgba(220, 38, 38, 1)';
+                        }),
+                        borderWidth: 1
+                    }];
+                    config.options.scales = {
+                        y: {
+                            beginAtZero: true,
+                            max: 3,
+                            ticks: {
+                                callback: function(value) {
+                                    if (value === 0) return translations[currentLanguage].riskClassification.includes('Acceptable') ? 'Acceptable' : 'Low';
+                                    if (value === 1) return translations[currentLanguage].riskClassification.includes('Faible') ? 'Faible' : 'Medium';
+                                    if (value === 2) return translations[currentLanguage].riskClassification.includes('Élevé') ? 'Élevé' : 'High';
+                                    return translations[currentLanguage].riskClassification.includes('Très élevé') ? 'Très élevé' : 'Very High';
+                                }
+                            }
+                        }
+                    };
+                }
+                else {
                     config.data.datasets = [
                         {
-                            label: 'Forward Head Distance',
+                            label: translations[currentLanguage].forwardHead.split(':')[0],
                             data: forwardHeadData,
                             borderColor: 'rgba(59, 130, 246, 0.8)',
                             backgroundColor: 'rgba(59, 130, 246, 0.2)',
@@ -1579,7 +1343,7 @@
                             tension: chartType === 'line' ? 0.4 : 0
                         },
                         {
-                            label: 'Shoulder Alignment Difference',
+                            label: translations[currentLanguage].shoulderAlign.split(':')[0],
                             data: shoulderAlignmentData,
                             borderColor: 'rgba(236, 72, 153, 0.8)',
                             backgroundColor: 'rgba(236, 72, 153, 0.2)',
@@ -1588,8 +1352,25 @@
                         }
                     ];
                     config.options.scales = {
-                        y: { beginAtZero: true, title: { display: true, text: 'Distance (Normalized)' } },
-                        x: { title: { display: true, text: 'Timestamp' } }
+                        y: { 
+                            beginAtZero: true, 
+                            title: { 
+                                display: true, 
+                                text: translations[currentLanguage].forwardHead.includes('Distance') ? 
+                                    'Distance (Normalized)' : 
+                                    (translations[currentLanguage].forwardHead.includes('Distancia') ? 
+                                    'Distancia (Normalizada)' : 'Distance (Normalisée)') 
+                            } 
+                        },
+                        x: { 
+                            title: { 
+                                display: true, 
+                                text: translations[currentLanguage].latestMetrics.includes('Timestamp') ? 
+                                    'Timestamp' : 
+                                    (translations[currentLanguage].latestMetrics.includes('Horodatage') ? 
+                                    'Horodatage' : 'Marca de tiempo') 
+                            } 
+                        }
                     };
                     config.type = chartType === 'scatter' ? 'scatter' : chartType;
                     if (chartType === 'scatter') {
@@ -1602,11 +1383,13 @@
 
                 postureChart = new Chart(ctx, config);
             } catch (error) {
+                alert('Error loading report: ' + error.message);
             }
         }
 
         function exportToPDF() {
             if (!postureChart || !latestChartData) {
+                alert('No data available to export');
                 return;
             }
 
@@ -1619,12 +1402,12 @@
             doc.setFontSize(24);
             doc.setTextColor(99, 102, 241);
             doc.setFont('helvetica', 'bold');
-            doc.text('PostureAI Report', 105, 20, { align: 'center' });
+            doc.text(translations[currentLanguage].reportTitle, 105, 20, { align: 'center' });
 
             doc.setFontSize(12);
             doc.setTextColor(100, 116, 139);
             doc.setFont('helvetica', 'normal');
-            doc.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 28, { align: 'center' });
+            doc.text(`${translations[currentLanguage].reportTitle.split(' ')[0]} ${new Date().toLocaleDateString()}`, 105, 28, { align: 'center' });
 
             doc.setDrawColor(99, 102, 241);
             doc.setLineWidth(0.5);
@@ -1637,21 +1420,23 @@
             doc.setFontSize(16);
             doc.setTextColor(30, 41, 59);
             doc.setFont('helvetica', 'bold');
-            doc.text('Key Metrics', 20, 130);
+            doc.text(translations[currentLanguage].latestMetrics, 20, 130);
 
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(71, 85, 105);
 
             const metrics = [
-                { label: 'Forward Head Distance', value: latestPostureData.forwardHeadDistance?.toFixed(4) || 'N/A' },
-                { label: 'Shoulder Alignment', value: latestPostureData.shoulderAlignment?.toFixed(4) || 'N/A' },
-                { label: 'Back Curvature', value: latestPostureData.backCurvature?.toFixed(4) || 'N/A' },
-                { label: 'Left Arm Angle', value: latestPostureData.leftArmAngle?.toFixed(2) || 'N/A' },
-                { label: 'Right Arm Angle', value: latestPostureData.rightArmAngle?.toFixed(2) || 'N/A' },
-                { label: 'Left Leg Angle', value: latestPostureData.leftLegAngle?.toFixed(2) || 'N/A' },
-                { label: 'Right Leg Angle', value: latestPostureData.rightLegAngle?.toFixed(2) || 'N/A' },
-                { label: 'Analysis Time', value: new Date(latestPostureData.timestamp).toLocaleString() || 'N/A' }
+                { label: translations[currentLanguage].forwardHead.split(':')[0], value: latestPostureData.forwardHeadDistance?.toFixed(4) || 'N/A' },
+                { label: translations[currentLanguage].shoulderAlign.split(':')[0], value: latestPostureData.shoulderAlignment?.toFixed(4) || 'N/A' },
+                { label: translations[currentLanguage].backCurve.split(':')[0], value: latestPostureData.backCurvature?.toFixed(4) || 'N/A' },
+                { label: translations[currentLanguage].leftArm.split(':')[0], value: latestPostureData.leftArmAngle?.toFixed(2) || 'N/A' },
+                { label: translations[currentLanguage].rightArm.split(':')[0], value: latestPostureData.rightArmAngle?.toFixed(2) || 'N/A' },
+                { label: translations[currentLanguage].riskLevel, value: latestPostureData.riskLevel || 'N/A' },
+                { label: translations[currentLanguage].postureScore.split(':')[0], value: latestPostureData.postureScore || 'N/A' },
+                { label: translations[currentLanguage].latestMetrics.includes('Time') ? 'Analysis Time' : 
+                  (translations[currentLanguage].latestMetrics.includes('Temps') ? 'Temps d\'analyse' : 'Tiempo de análisis'), 
+                  value: new Date(latestPostureData.timestamp).toLocaleString() || 'N/A' }
             ];
 
             metrics.forEach((metric, i) => {
@@ -1662,7 +1447,7 @@
             doc.setFontSize(14);
             doc.setTextColor(30, 41, 59);
             doc.setFont('helvetica', 'bold');
-            doc.text('Posture Status', 20, 220);
+            doc.text(translations[currentLanguage].postureAnalysis, 20, 220);
 
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
@@ -1673,9 +1458,9 @@
 
             doc.setFontSize(10);
             doc.setTextColor(100, 116, 139);
-            doc.text('© PostureAI - AI-powered posture analysis', 105, 290, { align: 'center' });
+            doc.text(`© ${translations[currentLanguage].appTitle} - ${translations[currentLanguage].postureAnalysis}`, 105, 290, { align: 'center' });
 
-            doc.save(`PostureAI_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+            doc.save(`${translations[currentLanguage].appTitle.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`);
         }
 
         function showView(view) {
@@ -1687,6 +1472,16 @@
             if (view === 'report') {
                 loadReport('pie');
             }
+        }
+
+        // Start posture analysis
+        function startAnalysis() {
+            camera.start();
+            analysisDiv.classList.remove('hidden');
+            postureStatus.textContent = translations[currentLanguage].issuesDetected;
+            statusIndicator.className = 'status-indicator status-good';
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
         }
     </script>
 </body>
