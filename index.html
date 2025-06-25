@@ -129,6 +129,16 @@
             z-index: 2;
         }
 
+        #faceOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 3;
+            pointer-events: none;
+        }
+
         #navbar {
             position: fixed;
             bottom: 20px;
@@ -624,6 +634,7 @@
     <!-- Main Application Content -->
     <video id="video" autoplay></video>
     <canvas id="canvas"></canvas>
+    <canvas id="faceOverlay"></canvas>
 
     <!-- Risk Level Panel -->
     <div id="riskLevelPanel">
@@ -967,6 +978,8 @@
         // Main Application Logic
         const videoElement = document.getElementById('video');
         const canvasElement = document.getElementById('canvas');
+        const faceOverlay = document.getElementById('faceOverlay');
+        const faceOverlayCtx = faceOverlay.getContext('2d');
         const canvasCtx = canvasElement.getContext('2d');
         const postureStatus = document.getElementById('postureStatus');
         const statusIndicator = document.getElementById('statusIndicator');
@@ -982,7 +995,7 @@
         let currentFacingMode = 'environment';
         let currentColor = '#18D140';
 
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyahIJiyLF8QGGxHuTOxi6dbHl-KH_Jcm_2-NFb3gkfYAcuMjFNeekOLozvhr-7oAhY/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbweXaq-kVNeqy-GrLfqKEQ-eerXfKoErFVpV_MgYeIVJ5y7_r50yF82S1sgw5jJsl7X/exec';
 
         // Initialize MediaPipe Pose
         const pose = new Pose({
@@ -1015,12 +1028,53 @@
 
         function onResults(results) {
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            faceOverlayCtx.clearRect(0, 0, faceOverlay.width, faceOverlay.height);
             canvasCtx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
 
             if (results.poseLandmarks) {
                 drawLandmarks(results.poseLandmarks);
                 analyzePosture(results.poseLandmarks);
+                hideFace(results.poseLandmarks);
             }
+        }
+
+        function hideFace(landmarks) {
+            if (!landmarks[0]) return; // No face landmark detected
+            
+            // Set overlay dimensions to match video
+            faceOverlay.width = canvasElement.width;
+            faceOverlay.height = canvasElement.height;
+            
+            // Get nose position (landmark 0)
+            const nose = landmarks[0];
+            const noseX = nose.x * faceOverlay.width;
+            const noseY = nose.y * faceOverlay.height;
+            
+            // Calculate face radius to cover the entire face
+            // We'll use the distance between the nose and the top of the head (landmark 10)
+            let faceRadius = 100; // Default radius
+            
+            if (landmarks[10]) { // Top of the head
+                const topHead = landmarks[10];
+                const dist = Math.sqrt(
+                    Math.pow((topHead.x - nose.x) * faceOverlay.width, 2) + 
+                    Math.pow((topHead.y - nose.y) * faceOverlay.height, 2)
+                );
+                faceRadius = dist * 1.5; // Make it large enough to cover the entire face
+            }
+            
+            // Draw black circle to hide face
+            faceOverlayCtx.beginPath();
+            faceOverlayCtx.arc(noseX, noseY, faceRadius, 0, 2 * Math.PI);
+            faceOverlayCtx.fillStyle = 'black';
+            faceOverlayCtx.fill();
+            
+            // Optional: Add a white border to make it look like a mask
+            faceOverlayCtx.beginPath();
+            faceOverlayCtx.arc(noseX, noseY, faceRadius + 5, 0, 2 * Math.PI);
+            faceOverlayCtx.strokeStyle = 'white';
+            faceOverlayCtx.lineWidth = 3;
+            faceOverlayCtx.stroke();
         }
 
         function drawLandmarks(landmarks) {
@@ -1042,6 +1096,9 @@
             }
 
             for (const landmark of landmarks) {
+                // Skip face landmarks (0-10)
+                if (landmark.visibility < 0.5 || landmark.id <= 10) continue;
+                
                 const gradient = canvasCtx.createRadialGradient(
                     landmark.x * canvasElement.width, landmark.y * canvasElement.height, 0,
                     landmark.x * canvasElement.width, landmark.y * canvasElement.height, 8
@@ -1482,6 +1539,8 @@
             statusIndicator.className = 'status-indicator status-good';
             canvasElement.width = videoElement.videoWidth;
             canvasElement.height = videoElement.videoHeight;
+            faceOverlay.width = videoElement.videoWidth;
+            faceOverlay.height = videoElement.videoHeight;
         }
     </script>
 </body>
